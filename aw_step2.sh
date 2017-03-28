@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#PBS -N zcall
+#PBS -N per_batch
 #PBS -k oe
 #PBS -e ./logs/
 #PBS -o ./logs/
@@ -41,11 +41,11 @@ plink --bfile n${i} --update-sex n${i}.sexcheck 2 --make-bed --out n${i}
 plink --bfile n${i} --missing --out n${i}
 plink --bfile n${i} --het --out n${i}
 Rscript ${PBS_O_WORKDIR}/imiss-vs-het_modified.R n${i}
-plink --bfile n${i} --remove n${i}.fail-imisshet-qc.txt --make-bed --out n${i}.clean-inds
+plink --bfile n${i} --remove n${i}.fail-imisshet-qc.txt --make-bed --out n${i}
 
 ### markers with excessive missing data
 #plink --bfile n${i}.clean-inds --missing --out n${i}.clean-inds
 #Rscript ../lmiss-hist_modified.R n1
-plink --bfile n${i}.clean-inds --maf 0.01 --geno 0.05 --hwe 0.00001 --make-bed --out n${i}.clean
+plink --bfile n${i} --geno 0.05 --write-snplist --out n${i}
 
-cp n{i}.clean.* ${PLINKPATH}
+cp n${i}.{bed,bim,fam,snplist} ${PLINKPATH}
