@@ -39,7 +39,7 @@ Rscript ${PBS_O_WORKDIR}/plot-IBD_modified.R all.shared-snps
 
 ### update HapMap data to the same genome build
 mkdir -p hapmap
-HAPMAPBFILENEW=${OUTPATH}/hapmap/$(basename $HAPMAPBFILE).${GENOMEBUILD}
+HAPMAPBFILENEW=hapmap/$(basename $HAPMAPBFILE).${GENOMEBUILD}
 plink --bfile ${HAPMAPBFILE} --update-alleles ${STRANDPATH}.update_alleles.txt \
       --make-bed --out ${HAPMAPBFILENEW}
 ${PBS_O_WORKDIR}/update_build.sh ${HAPMAPBFILE} ${STRANDPATH}-${GENOMEBUILD}.strand ${HAPMAPBFILENEW}
