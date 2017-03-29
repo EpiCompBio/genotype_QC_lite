@@ -1,12 +1,17 @@
 module load plink
+module load R
+
+set -eu
 
 PARAMS=/groupvol/med-bio/epiUKB/Airwave/scripts/genotype_QC_lite/aw_params.sh
 source $PARAMS
 CMDPATH=$(dirname $PARAMS)/
 
 ### per-batch preprocessing and QC
-cd $CMDPATH
+cd ${CMDPATH}
 qsub ${CMDPATH}/aw_step2.sh
+
+cd ${PLINKPATH}
 
 ### create single dataset
 # only markers that pass --geno filter in all batches
@@ -16,23 +21,39 @@ ls | egrep '^n[0-9]+.bed$' | sed 's/.bed//g' > batches.list
 plink --merge-list batches.list --make-bed --out all
 plink --bfile all --extract n.snplist.all --make-bed --out all.shared-snps
 
+######################
+### QC INDIVIDUALS ###
+######################
+
 ### create smaller, less redundant dataset
-plink --bfile all.shared-snps --indep-pairwise 50 5 0.2 --out all.shared-snps
+plink --bfile all.shared-snps --exclude ${HIGHLDFILE} --range --indep-pairwise 50 5 0.2 --out all.shared-snps
 plink --bfile all.shared-snps --extract all.shared-snps.prune.in --genome --out all.shared-snps
 
 ### IBD individuals
 Rscript ${PBS_O_WORKDIR}/plot-IBD_modified.R all.shared-snps
 # TODO write all.fail-IBD-check.FAILED_QC to fail-IBD-QC.txt?
 
-### divergent ancestry individuals
+### update HapMap data to the same genome build
+mkdir -p hapmap
+HAPMAPBFILENEW=${PLINKPATH}/hapmap/$(basename $HAPMAPBFILE).${GENOMEBUILD}
+plink --noweb --bfile ${HAPMAPBFILE} --update-alleles ${STRANDPATH}.update_alleles.txt --make-bed --out ${HAPMAPBFILENEW}
+${PBS_O_WORKDIR}/update_build.sh ${HAPMAPBFILE} ${STRANDPATH}-${GENOMEBUILD}.strand ${HAPMAPBFILENEW}
+
+### merge with HapMap data
 plink --bfile all.shared-snps --extract ${HAPMAPSNPS} --make-bed --out all.hapmap_snps
-plink --bfile all.hapmap_snps --bmerge ${HAPMAPBFILE}.bed ${HAPMAPBFILE}.bim ${HAPMAPBFILE}.fam \
-	--extract all.shared-snps.prune.in --make-bed --out all.shared_hapmap_pruned
-# TODO Error: 100 variants with 3+ alleles present.
-# TODO do PCA
+plink --bfile all.hapmap_snps --bmerge ${HAPMAPBFILENEW} --out all.missnp
+plink --bfile ${HAPMAPBFILENEW} --flip all.missnp.missnp --make-bed --out ${HAPMAPBFILENEW}.flipped
+plink --bfile all.hapmap_snps --bmerge ${HAPMAPBFILENEW}.flipped --extract all.shared-snps.prune.in \
+      --make-bed --out all.shared_hapmap_pruned
+
+### individuals with divergent ancestry
+Rscript ${PBS_O_WORKDIR}/aw_ancestry.r
 
 ### remove individuals not passing dataset-wide QC
 
+######################
+### QC MARKERS #######
+######################
 
 ### remove markers not passing dataset-wide QC
 plink --bfile XX --maf 0.01 --hwe 0.00001 --out XX
