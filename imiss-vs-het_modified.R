@@ -122,7 +122,7 @@ table <- data.frame(rbind(t1, t2, t3))
 
 colnames(table) <- c('FID', 'IID', 'Value') 
 
-write.table(table, file = file.path(getwd(),'.fail-imisshet-qc.txt'),
+write.table(table, file = file.path(getwd(),'fail-imisshet-qc.txt'),
             append = FALSE, col.names = TRUE, quote = FALSE, row.names = FALSE, sep = '\t')
 
 q()
