@@ -26,7 +26,7 @@ input_file = as.character(args[1])  #'P140343-Results_FinalReport'
 
 input_path = file.path(getwd(), input_file)
 
-output_path = file.path(getwd(), paste0(input_file,'.imiss-vs-het.pdf'))
+output_path = file.path(getwd(), 'imiss-vs-het.pdf')
 
 #Set ablines standard deviation for heterozygosity rate and for proportion of missing genotypes:
 het_rate_line_sd = as.numeric(as.character(args[2])) # 3
@@ -122,7 +122,7 @@ table <- data.frame(rbind(t1, t2, t3))
 
 colnames(table) <- c('FID', 'IID', 'Value') 
 
-write.table(table, file = file.path(getwd(),paste0(input_file,'.fail-imisshet-qc.txt')),
+write.table(table, file = file.path(getwd(),'.fail-imisshet-qc.txt'),
             append = FALSE, col.names = TRUE, quote = FALSE, row.names = FALSE, sep = '\t')
 
 q()

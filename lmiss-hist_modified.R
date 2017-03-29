@@ -21,7 +21,7 @@ input_file = as.character(args1)  #'P140343-Results_FinalReport'
 
 input_path = file.path(getwd(), input_file)
 
-output_path = file.path(getwd(), paste0(input_file,'.missing_variants_lmiss.png'))
+output_path = file.path(getwd(), 'missingness.png')
 
 # Plot missing variants:
 x = read.table(paste(input_path, '.lmiss', sep=''), header = TRUE)
