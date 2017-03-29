@@ -71,5 +71,5 @@ Rscript ${PBS_O_WORKDIR}/lmiss-hist_modified.R all.shared-snps.clean-inds
 plink --bfile all.shared-snps.clean-inds --geno ${GENO} --maf ${MAF} --hwe ${HWE} --make-bed --out all.clean-base
 
 
-cp all.clean-base{bed,bim,fam} IBD.pdf ancestry.png fail-* ${OUTPATH}
+cp all.clean-base.{bed,bim,fam} missingness.png ancestry.png IBD.pdf fail-* ${OUTPATH}
 
