@@ -65,7 +65,7 @@ plink --bfile all.shared-snps --remove fail-qc-inds.txt --make-bed --out all.sha
 ### check missing rate
 # markers with missing rates higher than the per-batch threshold are unlikely
 plink --bfile all.shared-snps.clean-inds -missing --out all.shared-snps.clean-inds
-Rscript ${CMDPATH}/lmiss-hist_modified.R all.shared-snps.clean-inds
+Rscript ${PBS_O_WORKDIR}/lmiss-hist_modified.R all.shared-snps.clean-inds
 
 ### remove markers not passing dataset-wide QC
 plink --bfile all.shared-snps.clean-inds --geno ${GENO} --maf ${MAF} --hwe ${HWE} --make-bed --out all.clean-base
