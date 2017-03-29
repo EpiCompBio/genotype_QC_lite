@@ -10,8 +10,7 @@
 
 source ${PBS_O_WORKDIR}/aw_params.sh
 
-module load plink
-module load R
+module load plink R gcc
 
 ######################
 ### MERGE ############
@@ -20,7 +19,7 @@ module load R
 ### create single dataset
 # only markers that pass --geno filter in all batches
 # only samples that pass missingness and heterogeneity filters
-cd ${PLINKPATH}
+cd ${OUTPATH}
 cat *.snplist | LC_ALL=C sort | LC_ALL=C uniq -c | awk -v n="$(ls *.snplist | wc -l)" '$1==n' > ${TMPDIR}/n.snplist.all
 ls | egrep '^n[0-9]+.bed$' | sed 's/.bed//g' > ${TMPDIR}/batches.list
 plink --merge-list batches.list --make-bed --out ${TMPDIR}/all
@@ -40,7 +39,7 @@ Rscript ${PBS_O_WORKDIR}/plot-IBD_modified.R all.shared-snps
 
 ### update HapMap data to the same genome build
 mkdir -p hapmap
-HAPMAPBFILENEW=${PLINKPATH}/hapmap/$(basename $HAPMAPBFILE).${GENOMEBUILD}
+HAPMAPBFILENEW=${OUTPATH}/hapmap/$(basename $HAPMAPBFILE).${GENOMEBUILD}
 plink --bfile ${HAPMAPBFILE} --update-alleles ${STRANDPATH}.update_alleles.txt \
       --make-bed --out ${HAPMAPBFILENEW}
 ${PBS_O_WORKDIR}/update_build.sh ${HAPMAPBFILE} ${STRANDPATH}-${GENOMEBUILD}.strand ${HAPMAPBFILENEW}
@@ -69,8 +68,8 @@ plink --bfile all.shared-snps.clean-inds -missing --out all.shared-snps.clean-in
 Rscript ${CMDPATH}/lmiss-hist_modified.R all.shared-snps.clean-inds
 
 ### remove markers not passing dataset-wide QC
-plink --bfile all.shared-snps.clean-inds --geno 0.05 --maf 0.01 --hwe 0.00001 --make-bed --out all.clean-base
+plink --bfile all.shared-snps.clean-inds --geno ${GENO} --maf ${MAF} --hwe ${HWE} --make-bed --out all.clean-base
 
 
-cp all.clean-base{bed,bim,fam} IBD.pdf ancestry.png fail-* ${PLINKPATH}
+cp all.clean-base{bed,bim,fam} IBD.pdf ancestry.png fail-* ${OUTPATH}
 

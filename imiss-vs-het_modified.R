@@ -19,19 +19,19 @@
 
 library("geneplotter")
 
-args1 <- commandArgs(trailingOnly = TRUE)
+args <- commandArgs(trailingOnly = TRUE)
 
 #Set input and output files:
-input_file = as.character(args1)  #'P140343-Results_FinalReport'
+input_file = as.character(args[1])  #'P140343-Results_FinalReport'
 
 input_path = file.path(getwd(), input_file)
 
 output_path = file.path(getwd(), paste0(input_file,'.imiss-vs-het.pdf'))
 
 #Set ablines standard deviation for heterozygosity rate and for proportion of missing genotypes:
-het_rate_line_sd = as.numeric(3)
+het_rate_line_sd = as.numeric(as.character(args[2])) # 3
 
-missing_genotypes_proportion = as.numeric(0.03)
+missing_genotypes_proportion = as.numeric(as.character(args[3])) # 0.03
 
 print(paste("standard deviation for heterozygosity rate =", het_rate_line_sd, 
             "and proportion of missing genotypes =", missing_genotypes_proportion))

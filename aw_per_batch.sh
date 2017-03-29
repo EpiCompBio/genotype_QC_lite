@@ -12,8 +12,7 @@ i=${PBS_ARRAY_INDEX}
 
 source ${PBS_O_WORKDIR}/aw_params.sh
 
-module load plink
-module load R
+module load plink R gcc
 
 cd $TMPDIR
 cp ${ZCALLPATH}/n${i}.zcall .
@@ -41,13 +40,13 @@ plink --bfile n${i} --update-sex n${i}.sexcheck 2 --make-bed --out n${i}
 ### individuals with excessive missing data and abnormal heterozygosity rate
 plink --bfile n${i} --missing --out n${i}
 plink --bfile n${i} --het --out n${i}
-Rscript ${PBS_O_WORKDIR}/imiss-vs-het_modified.R n${i}
+Rscript ${PBS_O_WORKDIR}/imiss-vs-het_modified.R n${i} ${HET} ${IMISS}
 plink --bfile n${i} --remove n${i}.fail-imisshet-qc.txt --make-bed --out n${i}
 
 ### markers with excessive missing data
 plink --bfile n${i} -missing --out n${i}
 Rscript ${PBS_O_WORKDIR}/lmiss-hist_modified.R n${i}
 mv missingness.png n${i}.missingness.png
-plink --bfile n${i} --geno 0.05 --write-snplist --out n${i}
+plink --bfile n${i} --geno ${GENO} --write-snplist --out n${i}
 
-cp n${i}.{bed,bim,fam,snplist,missingness.png,fail-imisshet-qc.txt} ${PLINKPATH}
+cp n${i}.{bed,bim,fam,snplist,missingness.png,fail-imisshet-qc.txt} ${OUTPATH}
