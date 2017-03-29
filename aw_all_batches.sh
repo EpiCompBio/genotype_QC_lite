@@ -22,7 +22,7 @@ module load plink R gcc
 cd ${OUTPATH}
 cat *.snplist | LC_ALL=C sort | LC_ALL=C uniq -c | awk -v n="$(ls *.snplist | wc -l)" '$1==n' > ${TMPDIR}/n.snplist.all
 ls | egrep '^n[0-9]+.bed$' | sed 's/.bed//g' > ${TMPDIR}/batches.list
-plink --merge-list batches.list --make-bed --out ${TMPDIR}/all
+plink --merge-list ${TMPDIR}/batches.list --make-bed --out ${TMPDIR}/all
 cd ${TMPDIR}
 plink --bfile all --extract n.snplist.all --make-bed --out all.shared-snps
 
