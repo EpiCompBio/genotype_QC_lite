@@ -20,7 +20,7 @@ args1 <- commandArgs(trailingOnly = TRUE)
 #Set input and output files:
 input_file = as.character(args1) #'P140343-Results_FinalReport'
 input_path = file.path(getwd(), input_file)
-output_path = file.path(getwd(), '.IBD.pdf')
+output_path = file.path(getwd(), 'IBD.pdf')
 IBD_cutoff = as.numeric(0.1875)
 FAILED_IDs_file = file.path(getwd(), 'fail-IBD-qc.txt')
 
