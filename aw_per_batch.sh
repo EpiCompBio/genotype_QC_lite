@@ -5,9 +5,9 @@
 #PBS -e ./logs/
 #PBS -o ./logs/
 #PBS -l mem=2gb
-#PBS -l walltime=2:00:00
+#PBS -l walltime=8:00:00
 #PBS -q med-bio
-#PBS -J 1-2
+#PBS -J 1-52
 i=${PBS_ARRAY_INDEX}
 
 source ${PBS_O_WORKDIR}/aw_params.sh

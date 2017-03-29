@@ -12,6 +12,6 @@ Rscript ${CMDPATH}/aw_check_packages.r
 
 ### run analysis
 cd ${CMDPATH}
-qsub aw_per_batch.sh
-#qsub aw_all_batches.sh
+per_batch=$(qsub aw_per_batch.sh)
+qsub -W depend=afterok:$per_batch aw_all_batches.sh
 
