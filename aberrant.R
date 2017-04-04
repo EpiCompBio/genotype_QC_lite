@@ -90,7 +90,7 @@ getwd()
 ##TO DO extract parameters:
 
 # Re-load a previous R session, data and objects:
-# load('../data.dir/R_session_saved_image_cytokines.RData', verbose=T)
+# load('/data.dir/R_session_saved_image_aberrant.RData', verbose=T)
 
 # Filename to save current R session, data and objects at the end:
 R_session_saved_image <- paste('R_session_saved_image_aberrant','.RData', sep='')
@@ -104,7 +104,6 @@ args <- commandArgs(trailingOnly = TRUE)
 #############################
 # Import libraries:
 library(data.table)
-library(ggplot2)
 
 # wget http://www.well.ox.ac.uk/~spencer/Aberrant/aberrant_1.0.tar.gz
 # install.packages('aberrant_1.0.tar.gz', repos = NULL, type = "source")
@@ -118,12 +117,44 @@ library(aberrant)
 #############################
 # Set-up arguments:
 PC_file <- as.character(args[1])
-# http://www.stats.ox.ac.uk/~davison/software/shellfish/snpload-aff.map.gz
-# gunzip snpload-aff.map.gz ; cat snpload-aff.map | cut -f 8,9 > snpload-aff.map.pca
-# Other examples in:
-# https://www.staff.ncl.ac.uk/heather.cordell/pak2010MDS.html
-# http://www.stats.ox.ac.uk/~davison/software/shellfish/shellfish.php
+#############################
+
+
+#############################
+# Example data
+
+# # With flashPCA:
+# # https://github.com/gabraham/flashpca/blob/master/flashpcaR/vignettes/flashpcaR.Rmd
+# # source("https://bioconductor.org/biocLite.R")
+# # devtools::install_github("gabraham/flashpca/flashpcaR")
+# library(flashpcaR)
+# data(hm3.chr1)
+# pca_flash <- scale2(hm3.chr1$bed)
+# dim(pca_flash)
+# f <- flashpca(X = pca_flash, ndim = 2, stand = 'center')
+# PC_file <- as.data.table(f$projection)
+
+# # The following are SNPs, not individuals, but works:
+# # http://www.stats.ox.ac.uk/~davison/software/shellfish/snpload-aff.map.gz
+# # http://www.stats.ox.ac.uk/~davison/software/shellfish/shellfish.php
+# # gunzip snpload-aff.map.gz ; cat snpload-aff.map | cut -f 8,9 > snpload-aff.map.pca
 # PC_file <- 'snpload-aff.map.pca'
+
+# # Simulate a dataset, the flashPCA Hapmap3 has no outliers
+# N <- 10000
+# M <- 2
+# sim1 <- matrix(rnorm(N * M, mean = 0, sd = 1), N, M)
+# sim1
+# PC_file <- as.data.table(sim1)
+
+# # Simulate a dataset with two clusters:
+# N <- 500
+# M <- 2
+# sim2 <- matrix(rnorm(N * M, mean = 4, sd = 1), N, M)
+# sim_2clust <- rbind(sim1, sim2)
+# plot(sim_2clust)
+# PC_file <- as.data.table(sim_2clust)
+#############################
 
 # Read files:
 PC_file <- fread(PC_file, header = F, stringsAsFactors = FALSE, select = c(1:2))
