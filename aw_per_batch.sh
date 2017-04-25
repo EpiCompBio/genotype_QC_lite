@@ -13,7 +13,7 @@ source ${PBS_O_WORKDIR}/aw_params.sh
 module load plink R gcc
 
 cd $TMPDIR
-cp $(echo ${INFILES}|cut -d' ' -f${i}) n${i}
+cp $(echo ${INFILES}|cut -d' ' -f${i}) n${i}.raw
 
 ##############
 ### PRE-QC ###
@@ -22,7 +22,7 @@ cp $(echo ${INFILES}|cut -d' ' -f${i}) n${i}
 ### preprocessing
 # make BED
 if [ "$ZCALLINPUT" = true ];then
-  python ${PBS_O_WORKDIR}/convertReportToTPED.py -R n${i}.zcall -O n${i}.tmp
+  python ${PBS_O_WORKDIR}/convertReportToTPED.py -R n${i}.raw -O n${i}.tmp
   plink --tfile n${i}.tmp --make-bed --out n${i}.raw
 fi
 # update alleles and genome build
