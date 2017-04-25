@@ -1,8 +1,11 @@
 ### paths
 BASEPATH=/groupvol/med-bio/epiUKB/Airwave/
-ZCALLINPUT=true
-INFILES=${BASEPATH}/coreExome_zcall/*.zcall
-OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/test_output/
+#ZCALLINPUT=true
+#INFILES=${BASEPATH}/coreExome_zcall/*.zcall
+#OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/test_output/
+ZCALLINPUT=false
+INFILES=${BASEPATH}/affymetrix_genotype/batches/*.bed
+OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/test_output_affy/
 STRANDPATH=${BASEPATH}/strandFiles/humancoreexome-12v1-1_a
 HIGHLDFILE=${BASEPATH}/../resources/QCfiles/high-LD-regions.txt
 HAPMAPPATH=${BASEPATH}/../resources/QCfiles/hapmap3r2_CEU.CHB.JPT.YRI.

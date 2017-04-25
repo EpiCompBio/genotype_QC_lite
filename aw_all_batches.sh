@@ -2,8 +2,6 @@
 
 #PBS -N all_batches
 #PBS -k oe
-#PBS -e ./logs/
-#PBS -o ./logs/
 #PBS -l mem=16gb
 #PBS -l walltime=2:00:00
 #PBS -q med-bio

@@ -5,7 +5,6 @@
 #PBS -l mem=2gb
 #PBS -l walltime=8:00:00
 #PBS -q med-bio
-#PBS -J 1-52
 i=${PBS_ARRAY_INDEX}
 
 source ${PBS_O_WORKDIR}/aw_params.sh
@@ -13,7 +12,6 @@ source ${PBS_O_WORKDIR}/aw_params.sh
 module load plink R gcc
 
 cd $TMPDIR
-cp $(echo ${INFILES}|cut -d' ' -f${i}) n${i}.raw
 
 ##############
 ### PRE-QC ###
@@ -22,8 +20,14 @@ cp $(echo ${INFILES}|cut -d' ' -f${i}) n${i}.raw
 ### preprocessing
 # make BED
 if [ "$ZCALLINPUT" = true ];then
+  cp $(echo ${INFILES}|cut -d' ' -f${i}) n${i}.raw
   python ${PBS_O_WORKDIR}/convertReportToTPED.py -R n${i}.raw -O n${i}.tmp
   plink --tfile n${i}.tmp --make-bed --out n${i}.raw
+else
+  BASENAME=$(echo ${INFILES} | cut -d' ' -f${i} | sed 's/.bed$//g')
+  cp ${BASENAME}.bed n${i}.raw.bed
+  cp ${BASENAME}.bim n${i}.raw.bim
+  cp ${BASENAME}.fam n${i}.raw.fam
 fi
 # update alleles and genome build
 plink --noweb --bfile n${i}.raw --update-alleles ${STRANDPATH}.update_alleles.txt --make-bed --out n${i}
