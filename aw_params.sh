@@ -1,6 +1,7 @@
 ### paths
 BASEPATH=/groupvol/med-bio/epiUKB/Airwave/
-ZCALLPATH=${BASEPATH}/coreExome_zcall/
+ZCALLINPUT=true
+INFILES=${BASEPATH}/coreExome_zcall/*.zcall
 OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/test_output/
 STRANDPATH=${BASEPATH}/strandFiles/humancoreexome-12v1-1_a
 HIGHLDFILE=${BASEPATH}/../resources/QCfiles/high-LD-regions.txt
@@ -13,5 +14,5 @@ GENOMEBUILD=b37
 GENO=0.05
 MAF=0.01
 HWE=0.00001
-HET=0.3
+HET=3
 IMISS=0.03

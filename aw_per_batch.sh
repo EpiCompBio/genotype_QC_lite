@@ -2,8 +2,6 @@
 
 #PBS -N per_batch
 #PBS -k oe
-#PBS -e ./logs/
-#PBS -o ./logs/
 #PBS -l mem=2gb
 #PBS -l walltime=8:00:00
 #PBS -q med-bio
@@ -15,7 +13,7 @@ source ${PBS_O_WORKDIR}/aw_params.sh
 module load plink R gcc
 
 cd $TMPDIR
-cp ${ZCALLPATH}/n${i}.zcall .
+cp $(echo ${INFILES}|cut -d' ' -f${i}) n${i}
 
 ##############
 ### PRE-QC ###
@@ -23,8 +21,10 @@ cp ${ZCALLPATH}/n${i}.zcall .
 
 ### preprocessing
 # make BED
-python ${PBS_O_WORKDIR}/convertReportToTPED.py -R n${i}.zcall -O n${i}.tmp
-plink --tfile n${i}.tmp --make-bed --out n${i}.raw
+if [ "$ZCALLINPUT" = true ];then
+  python ${PBS_O_WORKDIR}/convertReportToTPED.py -R n${i}.zcall -O n${i}.tmp
+  plink --tfile n${i}.tmp --make-bed --out n${i}.raw
+fi
 # update alleles and genome build
 plink --noweb --bfile n${i}.raw --update-alleles ${STRANDPATH}.update_alleles.txt --make-bed --out n${i}
 ${PBS_O_WORKDIR}/update_build.sh n${i} ${STRANDPATH}-${GENOMEBUILD}.strand n${i}
