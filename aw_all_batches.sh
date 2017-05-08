@@ -2,8 +2,8 @@
 
 #PBS -N all_batches
 #PBS -k oe
-#PBS -l mem=16gb
-#PBS -l walltime=2:00:00
+#PBS -l select=1:ncpus=4:mem=16gb
+#PBS -l walltime=8:00:00
 #PBS -q med-bio
 
 source ${PBS_O_WORKDIR}/aw_params.sh
@@ -24,6 +24,12 @@ plink --merge-list ${TMPDIR}/batches.list --make-bed --out ${TMPDIR}/all
 cd ${TMPDIR}
 plink --bfile all --extract n.snplist.all --make-bed --out all.shared-snps
 
+### if needed, map Affy IDs to RS IDs
+if [[ ! -z "$AFFYIDS" ]];then
+  sed -e 's/\"//g' ${AFFYIDS} > mapping.txt
+  plink --bfile all.shared-snps --update-name mapping.txt 3 1 20 --make-bed --out all.shared-snps
+fi
+
 ######################
 ### QC INDIVIDUALS ###
 ######################
@@ -43,7 +49,8 @@ plink --bfile ${HAPMAPBFILE} --update-alleles ${STRANDPATH}.update_alleles.txt \
 ${PBS_O_WORKDIR}/update_build.sh ${HAPMAPBFILE} ${STRANDPATH}-${GENOMEBUILD}.strand ${HAPMAPBFILENEW}
 
 ### merge with HapMap data
-plink --bfile all.shared-snps --extract ${HAPMAPSNPS} --make-bed --out all.hapmap_snps
+comm -12 <(cut -f2 all.shared-snps.bim|sort) <(cut -f2 ${HAPMAPBFILENEW}.bim|sort) > hapmap_common.snps
+plink --bfile all.shared-snps --extract hapmap_common.snps --make-bed --out all.hapmap_snps
 plink --bfile all.hapmap_snps --bmerge ${HAPMAPBFILENEW} --out all.missnp
 plink --bfile ${HAPMAPBFILENEW} --flip all.missnp.missnp --make-bed --out ${HAPMAPBFILENEW}.flipped
 plink --bfile all.hapmap_snps --bmerge ${HAPMAPBFILENEW}.flipped --extract all.shared-snps.prune.in \
