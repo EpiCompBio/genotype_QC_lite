@@ -2,8 +2,8 @@
 
 #PBS -N per_batch
 #PBS -k oe
-#PBS -l mem=2gb
 #PBS -l walltime=8:00:00
+#PBS -l select=1:ncpus=1:mem=2gb
 #PBS -q med-bio
 i=${PBS_ARRAY_INDEX}
 
@@ -25,13 +25,20 @@ if [ "$ZCALLINPUT" = true ];then
   plink --tfile n${i}.tmp --make-bed --out n${i}.raw
 else
   BASENAME=$(echo ${INFILES} | cut -d' ' -f${i} | sed 's/.bed$//g')
-  cp ${BASENAME}.bed n${i}.raw.bed
-  cp ${BASENAME}.bim n${i}.raw.bim
-  cp ${BASENAME}.fam n${i}.raw.fam
+  mv ${BASENAME}.bed n${i}.raw.bed
+  mv ${BASENAME}.bim n${i}.raw.bim
+  mv ${BASENAME}.fam n${i}.raw.fam
 fi
+
 # update alleles and genome build
-plink --noweb --bfile n${i}.raw --update-alleles ${STRANDPATH}.update_alleles.txt --make-bed --out n${i}
-${PBS_O_WORKDIR}/update_build.sh n${i} ${STRANDPATH}-${GENOMEBUILD}.strand n${i}
+if [[ ! -z "$AFFYIDS" ]];then
+  mv n${i}.raw.bed n${i}.bed
+  mv n${i}.raw.bim n${i}.bim
+  mv n${i}.raw.fam n${i}.fam
+else
+  plink --noweb --bfile n${i}.raw --update-alleles ${STRANDPATH}.update_alleles.txt --make-bed --out n${i}
+  ${PBS_O_WORKDIR}/update_build.sh n${i} ${STRANDPATH}-${GENOMEBUILD}.strand n${i}
+fi
 
 ### update sex with detected one
 plink --bfile n${i} --check-sex --out n${i}

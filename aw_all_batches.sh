@@ -2,7 +2,7 @@
 
 #PBS -N all_batches
 #PBS -k oe
-#PBS -l select=1:ncpus=4:mem=16gb
+#PBS -l select=1:ncpus=16:mem=32gb
 #PBS -l walltime=8:00:00
 #PBS -q med-bio
 
@@ -49,7 +49,9 @@ plink --bfile ${HAPMAPBFILE} --update-alleles ${STRANDPATH}.update_alleles.txt \
 ${PBS_O_WORKDIR}/update_build.sh ${HAPMAPBFILE} ${STRANDPATH}-${GENOMEBUILD}.strand ${HAPMAPBFILENEW}
 
 ### merge with HapMap data
-comm -12 <(cut -f2 all.shared-snps.bim|sort) <(cut -f2 ${HAPMAPBFILENEW}.bim|sort) > hapmap_common.snps
+cut -f2 all.shared-snps.bim | sort > all.shared-snps.sort
+cut -f2 ${HAPMAPBFILENEW}.bim | sort > ${HAPMAPBFILENEW}.sort
+comm -12 all.shared-snps.sort ${HAPMAPBFILENEW}.sort > hapmap_common.snps
 plink --bfile all.shared-snps --extract hapmap_common.snps --make-bed --out all.hapmap_snps
 plink --bfile all.hapmap_snps --bmerge ${HAPMAPBFILENEW} --out all.missnp
 plink --bfile ${HAPMAPBFILENEW} --flip all.missnp.missnp --make-bed --out ${HAPMAPBFILENEW}.flipped
@@ -75,6 +77,7 @@ Rscript ${PBS_O_WORKDIR}/lmiss-hist_modified.R all.shared-snps.clean-inds
 ### remove markers not passing dataset-wide QC
 plink --bfile all.shared-snps.clean-inds --geno ${GENO} --maf ${MAF} --hwe ${HWE} --make-bed --out all.clean-base
 
-
+echo ${OUTPATH}
+ll all.clean-base.{bed,bim,fam} missingness.png ancestry.png IBD.pdf fail-*
 cp all.clean-base.{bed,bim,fam} missingness.png ancestry.png IBD.pdf fail-* ${OUTPATH}
 
