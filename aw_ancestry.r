@@ -10,10 +10,10 @@ f  = flashpca("all.shared_hapmap_pruned", ndim=2)
 clusters = cutree(hclust(dist(f$vectors[wh_hapmap,])), k=3)
 centroids = t(sapply(unique(clusters), function(i) colMeans(f$vectors[wh_hapmap,][clusters==i,])))
 x = f$vectors[wh_project,]
-distances = outer(seq(nrow(x)), seq(nrow(centroids)), Vectorize(function(i,j) sum((x[i,]-centroids[j,])^2)))
+distances = t(apply(x, 1, function(i) apply(centroids, 1, function(c) dist(rbind(i,c)))))
 wh_cluster = as.numeric(names(tail(sort(table(apply(distances, 1, which.min))),1)))
 mindist = distances[,wh_cluster]
-wh_outlier = wh_project[which(mindist>median(mindist)+6*mad(mindist))]
+wh_outlier = wh_project[which(mindist>0.005)]
 
 write.table(all_samples_tab[wh_outlier,], "fail-ancestry-qc.txt", qu=F,ro=F,co=F,sep=" ")
 
