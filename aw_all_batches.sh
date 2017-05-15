@@ -2,7 +2,7 @@
 
 #PBS -N all_batches
 #PBS -k oe
-#PBS -l select=1:ncpus=16:mem=32gb
+#PBS -l select=1:ncpus=20:mem=32gb
 #PBS -l walltime=8:00:00
 #PBS -q med-bio
 

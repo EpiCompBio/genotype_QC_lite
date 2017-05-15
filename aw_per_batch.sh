@@ -25,9 +25,9 @@ if [ "$ZCALLINPUT" = true ];then
   plink --tfile n${i}.tmp --make-bed --out n${i}.raw
 else
   BASENAME=$(echo ${INFILES} | cut -d' ' -f${i} | sed 's/.bed$//g')
-  mv ${BASENAME}.bed n${i}.raw.bed
-  mv ${BASENAME}.bim n${i}.raw.bim
-  mv ${BASENAME}.fam n${i}.raw.fam
+  cp ${BASENAME}.bed n${i}.raw.bed
+  cp ${BASENAME}.bim n${i}.raw.bim
+  cp ${BASENAME}.fam n${i}.raw.fam
 fi
 
 # update alleles and genome build

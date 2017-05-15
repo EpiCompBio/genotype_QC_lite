@@ -13,6 +13,7 @@ x = f$vectors[wh_project,]
 distances = t(apply(x, 1, function(i) apply(centroids, 1, function(c) dist(rbind(i,c)))))
 wh_cluster = as.numeric(names(tail(sort(table(apply(distances, 1, which.min))),1)))
 mindist = distances[,wh_cluster]
+summary(mindist)
 wh_outlier = wh_project[which(mindist>0.005)]
 
 write.table(all_samples_tab[wh_outlier,], "fail-ancestry-qc.txt", qu=F,ro=F,co=F,sep=" ")
