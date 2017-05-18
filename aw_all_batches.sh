@@ -39,7 +39,7 @@ plink --bfile all.shared-snps --exclude ${HIGHLDFILE} --range --indep-pairwise 5
 plink --bfile all.shared-snps --extract all.shared-snps.prune.in --genome --out all.shared-snps
 
 ### IBD individuals
-Rscript ${PBS_O_WORKDIR}/plot-IBD_modified.R all.shared-snps
+Rscript ${PBS_O_WORKDIR}/plot-IBD_modified.R all.shared-snps ${IBD}
 
 ### update HapMap data to the same genome build
 mkdir -p hapmap
@@ -59,7 +59,7 @@ plink --bfile all.hapmap_snps --bmerge ${HAPMAPBFILENEW}.flipped --extract all.s
       --make-bed --out all.shared_hapmap_pruned
 
 ### individuals with divergent ancestry
-Rscript ${PBS_O_WORKDIR}/aw_ancestry.r
+Rscript ${PBS_O_WORKDIR}/aw_ancestry.r ${ETHNICFILE}
 
 ### remove individuals not passing dataset-wide QC
 cat fail-* | sort -k1 | uniq | cut -f1,2 -d' '> fail-qc-inds.txt
@@ -77,7 +77,10 @@ Rscript ${PBS_O_WORKDIR}/lmiss-hist_modified.R all.shared-snps.clean-inds
 ### remove markers not passing dataset-wide QC
 plink --bfile all.shared-snps.clean-inds --geno ${GENO} --maf ${MAF} --hwe ${HWE} --make-bed --out all.clean-base
 
-echo ${OUTPATH}
-ll all.clean-base.{bed,bim,fam} missingness.png ancestry.png IBD.pdf fail-*
-cp all.clean-base.{bed,bim,fam} missingness.png ancestry.png IBD.pdf fail-* ${OUTPATH}
+
+### copy output back to the out path
+cp all.clean-base.{bed,bim,fam} missingness.png ancestry.* IBD.pdf fail-* n.snplist.all ${OUTPATH}
+
+### compute some filtering stats
+Rscript ${PBS_O_WORKDIR}/aw_stats.r ${PBS_O_WORKDIR}/aw_params.sh
 

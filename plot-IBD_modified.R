@@ -15,22 +15,24 @@
 
 #################################
 
-args1 <- commandArgs(trailingOnly = TRUE)
+library("data.table")
+
+args = commandArgs(trailingOnly = TRUE)
 
 #Set input and output files:
-input_file = as.character(args1) #'P140343-Results_FinalReport'
+input_file = as.character(args[1])
 input_path = file.path(getwd(), input_file)
 output_path = file.path(getwd(), 'IBD.pdf')
-IBD_cutoff = as.numeric(0.1875)
+IBD_cutoff = as.numeric(args[2])
 FAILED_IDs_file = file.path(getwd(), 'fail-IBD-qc.txt')
 
 #Read in data:
-data=read.table(paste(input_path, ".genome", sep=''), h=T)
+data=fread(paste(input_path, ".genome", sep=''))
 
 #Plot:
 pdf(output_path)
 
-hist(data$PI_HAT, ylim=c(0,100), col="RED", breaks=100, 
+hist(data$PI_HAT, ylim=c(0,nrow(data)), col="RED", breaks=100, 
      xlab="Estimated mean pairwise IBD",main="")
 
 abline(v=IBD_cutoff, col="gray32", lty=2)
@@ -42,4 +44,7 @@ out = which(data$PI_HAT > IBD_cutoff)
 write.table(data[out,], file = FAILED_IDs_file, append = FALSE, col.names=TRUE, row.names=FALSE, 
             sep='\t', quote= FALSE)
 
-quit()
+
+#pihats = seq(0.1,0.8,0.05)
+#nfilt = sapply(pihats, function(i) length(unique(data[which(data$PI_HAT > i),FID1])))
+#plot(pihats, nfilt, xlab="IBD", ylab="# samples")
