@@ -56,10 +56,4 @@ mv fail-imisshet-qc.txt n${i}.fail-imisshet-qc.txt
 mv imiss-vs-het.pdf n${i}.imiss-vs-het.pdf
 plink --bfile n${i} --remove n${i}.fail-imisshet-qc.txt --make-bed --out n${i}
 
-### markers with excessive missing data
-plink --bfile n${i} -missing --out n${i}
-Rscript ${PBS_O_WORKDIR}/lmiss-hist_modified.R n${i}
-mv missingness.png n${i}.missingness.png
-plink --bfile n${i} --geno ${GENO} --write-snplist --out n${i}
-
-cp n${i}.{bed,bim,fam,snplist,missingness.png,fail-imisshet-qc.txt,imiss-vs-het.pdf} ${OUTPATH}
+cp n${i}.{bed,bim,fam,fail-imisshet-qc.txt,imiss-vs-het.pdf} ${OUTPATH}
