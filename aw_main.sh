@@ -13,6 +13,7 @@ Rscript ${CMDPATH}/aw_check_packages.r
 ### run analysis
 cd ${CMDPATH}
 NSAMPLES=$(echo $INFILES | wc -w)
+if [ $NSAMPLES == "1" ]; then NSAMPLES=2:2; fi
 per_batch=$(qsub -J 1-${NSAMPLES} aw_per_batch.sh)
 qsub -W depend=afterok:$per_batch aw_all_batches.sh
 

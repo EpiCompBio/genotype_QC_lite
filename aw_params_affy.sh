@@ -1,13 +1,9 @@
 ### paths
 BASEPATH=/groupvol/med-bio/epiUKB/Airwave/
 
-#ZCALLINPUT=true
-#INFILES=${BASEPATH}/coreExome_zcall/*.zcall
-#OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/test_output/
-#AFFYIDS=
 ZCALLINPUT=false
-INFILES=${BASEPATH}/affymetrix_genotype/batches_raw/*.bed
-OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/test_output_affy/
+INFILES=${BASEPATH}/affymetrix_genotype/ICL_raw_1-9.bed
+OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/output_affy_v2/
 AFFYIDS=${BASEPATH}/affymetrix_genotype/standard/Axiom_UKB_VariantIDmapping.csv
 ETHNICFILE=${BASEPATH}/affymetrix_genotype/ethnicity.txt
 
@@ -19,9 +15,9 @@ HAPMAPSNPS=${HAPMAPPATH}no-at-cg-snps.txt
 
 ### options
 GENOMEBUILD=b37
-GENO=0.05
+GENO=0.02
 MAF=0.01
 HWE=0.00001
 HET=3
 IMISS=0.03
-IBD=0.75
+REL=0.4

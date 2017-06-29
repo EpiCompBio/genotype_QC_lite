@@ -2,15 +2,12 @@
 BASEPATH=/groupvol/med-bio/epiUKB/Airwave/
 
 ZCALLINPUT=true
-INFILES=${BASEPATH}/coreExome_zcall/*.zcall
-OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/test_output_illumina/
+# same as ${BASEPATH}/coreExome_zcall/*.zcall but properly ordered
+INFILES=$(ls ${BASEPATH}/coreExome_zcall/ | egrep '^n[0-9]+.zcall$' | sort -n -k1.2 | \
+        sed "s@^@${BASEPATH}\/coreExome_zcall\/@" | sed ':a;N;$!ba;s/\n/ /g')
+OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/output_illumina_v4/
 AFFYIDS=
 ETHNICFILE=
-#ZCALLINPUT=false
-#INFILES=${BASEPATH}/affymetrix_genotype/batches_raw/*.bed
-#OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/test_output_affy/
-#AFFYIDS=${BASEPATH}/affymetrix_genotype/standard/Axiom_UKB_VariantIDmapping.csv
-#ETHNICFILE=${BASEPATH}/affymetrix_genotype/ethnicity.txt
 
 STRANDPATH=${BASEPATH}/strandFiles/humancoreexome-12v1-1_a
 HIGHLDFILE=${BASEPATH}/../resources/QCfiles/high-LD-regions.txt
@@ -20,9 +17,9 @@ HAPMAPSNPS=${HAPMAPPATH}no-at-cg-snps.txt
 
 ### options
 GENOMEBUILD=b37
-GENO=0.05
+GENO=0.02
 MAF=0.01
 HWE=0.00001
 HET=3
 IMISS=0.03
-IBD=0.75
+REL=0.4
