@@ -3,7 +3,7 @@ BASEPATH=/groupvol/med-bio/epiUKB/Airwave/
 
 ZCALLINPUT=false
 INFILES=${BASEPATH}/affymetrix_genotype/ICL_raw_1-9.bed
-OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/output_affy_v2/
+OUTPATH=${BASEPATH}/gwas_results/affy_b37_maf0.01/
 AFFYIDS=${BASEPATH}/affymetrix_genotype/standard/Axiom_UKB_VariantIDmapping.csv
 ETHNICFILE=${BASEPATH}/affymetrix_genotype/ethnicity.txt
 

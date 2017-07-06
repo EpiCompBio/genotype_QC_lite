@@ -1,11 +1,13 @@
 ### paths
 BASEPATH=/groupvol/med-bio/epiUKB/Airwave/
 
-ZCALLINPUT=false
-INFILES=${BASEPATH}/affymetrix_genotype/ICL_raw_1-9.bed
-OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/output_affy_v2/
-AFFYIDS=${BASEPATH}/affymetrix_genotype/standard/Axiom_UKB_VariantIDmapping.csv
-ETHNICFILE=${BASEPATH}/affymetrix_genotype/ethnicity.txt
+ZCALLINPUT=true
+# same as ${BASEPATH}/coreExome_zcall/*.zcall but properly ordered
+INFILES=$(ls ${BASEPATH}/coreExome_zcall/ | egrep '^n[0-9]+.zcall$' | sort -n -k1.2 | \
+        sed "s@^@${BASEPATH}\/coreExome_zcall\/@" | sed ':a;N;$!ba;s/\n/ /g')
+OUTPATH=${BASEPATH}/gwas_results/illumina_b37_maf0.01/
+AFFYIDS=
+ETHNICFILE=
 
 STRANDPATH=${BASEPATH}/strandFiles/humancoreexome-12v1-1_a
 HIGHLDFILE=${BASEPATH}/../resources/QCfiles/high-LD-regions.txt

@@ -28,10 +28,18 @@ abline(v=log10(IMISS_THR), col="RED", lty=2)
 dev.off()
 
 #Write failed samples:
+prepare = function(df, fail) {
+  names(df)[3] = "VALUE"
+  if (nrow(df)) {
+    cbind(df,FAILED=fail)
+  } else {
+    df$FAILED=character(0)
+    df
+  }
+}
 high_het = het[which(het$meanHet>HET_SD_THRS[2]), c("FID","IID","meanHet")]
 low_het = het[which(het$meanHet<HET_SD_THRS[1]), c("FID","IID","meanHet")]
 high_imiss = imiss[which(imiss[,6]>IMISS_THR), c("FID","IID","F_MISS")]
-colnames(high_het)[3] = colnames(low_het)[3] = colnames(high_imiss)[3] = "VALUE"
-failed = rbind(cbind(high_het,FAILED="high_het"),cbind(low_het,FAILED="low_het"),cbind(high_imiss,FAILED="high_imiss"))
+failed = rbind(prepare(high_het,"high_het"),prepare(low_het,"low_het"),prepare(high_imiss,"high_imiss"))
 write.table(failed, file = file.path(getwd(),'fail-imisshet-qc.txt'), co=T, qu=F, ro=F, sep='\t')
 

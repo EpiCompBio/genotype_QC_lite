@@ -5,7 +5,7 @@ ZCALLINPUT=true
 # same as ${BASEPATH}/coreExome_zcall/*.zcall but properly ordered
 INFILES=$(ls ${BASEPATH}/coreExome_zcall/ | egrep '^n[0-9]+.zcall$' | sort -n -k1.2 | \
         sed "s@^@${BASEPATH}\/coreExome_zcall\/@" | sed ':a;N;$!ba;s/\n/ /g')
-OUTPATH=${BASEPATH}/scripts/genotype_QC_lite/output_illumina_v4/
+OUTPATH=${BASEPATH}/gwas_results/illumina_b37_maf0.01/
 AFFYIDS=
 ETHNICFILE=
 
