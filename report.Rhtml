@@ -1,0 +1,105 @@
+<!–– Rscript -e "library(knitr); knit('report.Rhtml', output='report.html')" $PARAMS ––>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Report of the quality control (QC) of the genotyping data</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+   <link href="bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+   <link href="bootstrap-3.3.7-dist/css/bootstrap-theme.min.css" rel="stylesheet">
+</head>
+<body>
+
+<h1> Report of the quality control (QC) of the genotyping data </h1>
+
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+
+opts_chunk$set(fig.width=5, fig.height=5)
+options(knitr.table.format = "html")
+options(warn=-1)
+
+for (lib in c("knitr","kableExtra","data.table","gtools","dplyr"))
+  suppressMessages(library(lib,character.only=T))
+
+params = commandArgs(trailingOnly=TRUE)[1]
+getParam = function(param) system(paste0("source ",params,"; echo $",param),intern=T)
+
+filenames = list.files(getParam("OUTPATH"), pattern="n*.fam", full=T)
+keptTab = t(sapply(filenames, function(x) c(system(paste0("wc -l <",x),intern=T),gsub("[.].*","",basename(x)))))
+keptTab = as.data.table(keptTab)
+colnames(keptTab) = c("kept", "BATCH")
+keptTab[,kept:=as.numeric(kept)]
+
+filenames = list.files(getParam("OUTPATH"), pattern="n*.fail-imisshet-qc.txt", full=T)
+dt = rbindlist(lapply(filenames, function(x)cbind(fread(x),BATCH=gsub("[.].*","",basename(x)))))
+dt[,CID:=paste(FID,IID)]
+batchFiltTab = merge(dcast(dt[,.N,by=list(BATCH,FAILED)], BATCH~FAILED, value.var="N"), 
+                     dt[,.(excluded=length(unique(CID))),by=BATCH], by="BATCH")
+batchFiltTab[is.na(batchFiltTab)] = 0
+
+samplesTab = merge(batchFiltTab, keptTab, by="BATCH")
+samplesTab[,total:=excluded+kept]
+samplesTab = samplesTab[mixedorder(samplesTab$BATCH),]
+setcolorder(samplesTab, c("BATCH", "total", "kept", "excluded", "high_imiss", "high_het", "low_het"))
+nSamplesExcl = sum(samplesTab$excluded)
+nSamplesTotal = sum(samplesTab$total)
+nBatches = nrow(samplesTab)
+
+if (nBatches==1) {
+  cat('<p>QC was performed directly on the whole dataset, treated as a single batch, consisting of ',nSamplesTotal,' samples.</p>')
+} else {
+  cat(paste0('<p>QC was performed on ',nSamplesTotal,' samples distributed across ',nBatches,' batches.</p>'))
+  # XX table of batch names and their number of samples
+}
+
+end.rcode-->
+
+<p>Input data was read from the following files: </p>
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+infiles = getParam("INFILES")
+infilesV = strsplit(infiles," ")[[1]]
+if (length(unique(dirname(infilesV)))==1) {
+  cat(paste0("<p>",paste(basename(infilesV), collapse=", "),"</p>"))
+  cat("<p>The files were in this folder:</p>")
+  cat(paste0("<p>",unique(dirname(infilesV)),"</p>"))
+} else {
+  cat(paste0("<p>",infilesV,"</p>"))
+}
+end.rcode-->
+
+<h2> Sample QC </h2>
+<hr/>
+
+<p>Per-sample QC of GWA data consisted of four steps: (1) identification of individuals with discordant sex information, (2) identification of samples with outlying missing genotype or heterozygosity rates, (3) identification of duplicated or related individuals and (4) identification of individuals of divergent ancestry. Steps 2 and 3 were carried out per-batch individually, whereas steps 3 and 4 were applied on the whole sample set.</p>
+
+<h3> Samples with outlying missing genotype or heterozygosity rates </h3>
+
+<p>Large variations exist in DNA sample quality and these can have substantial effects on genotype call rate and genotype accuracy. Samples of low DNA quality or concentration often have below-average call rates and genotype accuracy. The genotype failure rate and heterozygosity rate per individual are both measures of DNA sample quality. Therefore, individuals with more than <!--rinline I(as.numeric(getParam("IMISS"))*100) -->% missing genotypes were removed. Those with an excessive or reduced proportion of heterozygote genotypes (<!--rinline I(getParam("HET")) --> SDs from the batch mean), which may be indicative of DNA sample contamination, inbreeding or differing population, were equally removed.</p>
+
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+
+kable(rbind(t(c(BATCH="ALL",apply(samplesTab[,-1],2,sum))), samplesTab)) %>%
+  kable_styling(bootstrap_options=c("striped","hover","condensed","responsive"), full_width=F) %>%
+  row_spec(1, bold = T) %>%
+  add_header_above(c(" " = 1, " " = 1, " " = 1, " " = 1, "Filters" = 3))
+
+end.rcode-->
+
+<h3> Duplicated or related individuals </h3>
+
+<p>If duplicates, high-degree relatives are present, a bias may be introduced in the study because the genotypes within families will be overrepresented, and thus the sample may no longer be a fair reflection of the allele frequencies in the entire population. To identify duplicate and related individuals, identity by state (IBS) was calculated for each pair of individuals based on the average proportion of alleles shared in common at genotyped SNPs. Because the method works best when only independent SNPs are included in the analysis, regions of extended linkage disequilibrium (LD) were removed remaining regions were pruned so that no pair of SNPs within a 50 kb window wre correlated at r2 > 0.2. The degree of recent shared ancestry for a pair of individuals (identity by descent, IBD) was then estimated with genome-wide IBS data.</p>
+
+<h3> Individuals of divergent ancestry</h3>
+
+<p>In genetic studies, a major source of confounding is population stratification, in which genotypic differences between cases and controls are generated because of different population origins rather than because of any effect on disease risk. Efforts were made to reduce the effect of population stratification through the removal of individuals of divergent ancestry. For this purpose, principal component analysis (PCA) was used, a multivariate statistical method used here to derive uncorrelated variables from the overall set of (correlated) markers. The principal component model was built using pruned genome-wide genotype data from populations of known ancestry, namely, the HapMap genotype data from Europe (CEU), Asia (CHB + JPT) and Africa (YRI). The PCA was then applied to predict principal component scores for the sample set, thus allowing them to be clustered in terms of ancestry alongside the HapMap samples. Regions of extended high LD (including the HLA region) were removed before the analysis because these can overly influence the principal component model.</p>
+<p>The CEU population was the closest to the majority of individuals in the sample set. A maximum Euclidean distance of 0.005 from the this population in the first to principal components was set as a threshold to remove individuals with divergent ancestry.</p>
+
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+
+cat(paste0("<img src='",getParam("OUTPATH"),"ancestry.png'/>"))
+
+end.rcode-->
+
+</body>
+</html>
