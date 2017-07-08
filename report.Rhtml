@@ -155,7 +155,33 @@ end.rcode-->
                                     <h3 class="block-title">Individuals of divergent ancestry</h3>
 
 <p>In genetic studies, a major source of confounding is population stratification, in which genotypic differences between cases and controls are generated because of different population origins rather than because of any effect on disease risk. Efforts were made to reduce the effect of population stratification through the removal of individuals of divergent ancestry. For this purpose, principal component analysis (PCA) was used, a multivariate statistical method used here to derive uncorrelated variables from the overall set of (correlated) markers. The principal component model was built using pruned genome-wide genotype data from populations of known ancestry, namely, the HapMap genotype data from Europe (CEU), Asia (CHB + JPT) and Africa (YRI). The PCA was then applied to predict principal component scores for the sample set, thus allowing them to be clustered in terms of ancestry alongside the HapMap samples. Regions of extended high LD (including the HLA region) were removed before the analysis because these can overly influence the principal component model.</p>
-<p>The CEU population was the closest to the majority of individuals in the sample set. A maximum Euclidean distance of <!--rinline I(getParam("ANC")) --> from the this population in the first two principal components was set as a threshold to remove individuals with divergent ancestry.</p>
+
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+
+ancestryFailFile = file.path(getParam("OUTPATH"),"report/data/fail-ancestry-qc.txt")
+nAncFail = system(paste0("wc -l <", ancestryFailFile), intern=T)
+
+end.rcode-->
+
+<p>The CEU population was the closest to the majority of individuals in the sample set. A maximum Euclidean distance of <!--rinline I(getParam("ANC")) --> from the this population in the first two principal components was set as a threshold to remove individuals with divergent ancestry. A total of <!--rinline I(nAncFail) --> individuals were removed.
+
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+
+ancestryTabFile = file.path(getParam("OUTPATH"),"report/data/ancestry.csv")
+if (file.exists(ancestryTabFile)) {
+    cat(" See the table below for a breakdown by self-reported ancestry and how it matches the applied genotype-based filtering:</p>")
+    dt_anc = fread(ancestryTabFile, header=T)
+    setnames(dt_anc, "V1", "Ancestry")
+    dt_anc[,Total:=Kept+Filtered]
+    setcolorder(dt_anc, c("Ancestry", "Total", "Kept", "Filtered"))
+    kable(dt_anc) %>%
+      kable_styling(bootstrap_options=c("striped","hover","condensed","responsive"), full_width=F) %>%
+        add_footnote(c("Some individuals without ancestry information may have been filtered. See text for a total."), notation="symbol")
+} else {
+    cat("</p>")
+}
+
+end.rcode-->
 
                                     <div class="screenshot-holder">
                                         <a href="data/ancestry.png" target="_new"><img class="img-responsive" src="data/ancestry.png" alt="Ancestry PCA" /></a>
@@ -188,7 +214,17 @@ end.rcode-->
                                     </p>
                                 </div><!--//section-block-->
                             </section><!--//doc-section-->
-                            
+
+                            <section id="summary-section" class="doc-section">
+                                <h2 class="section-title">Summary</h2>
+                                <div class="section-block">
+
+                                   <p>XX TODO XX summary table with excluded samples and markers
+                                    </p>
+
+                                </div>
+                            </section><!--//doc-section-->
+
                         </div><!--//content-inner-->
                     </div><!--//doc-content-->
                     <div class="doc-sidebar hidden-xs">
@@ -212,6 +248,7 @@ end.rcode-->
                                         <li><a class="scrollto" href="#markerqc3">Minor allele freq.</a></li>
                                     </ul><!--//nav-->
                                 </li>
+                                <li><a class="scrollto" href="#summary-section">Summary</a></li>
                             </ul><!--//doc-menu-->
                         </nav>
                     </div><!--//doc-sidebar-->
