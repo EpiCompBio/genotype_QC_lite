@@ -67,10 +67,11 @@ wh_select = wh_project[which(!mindist>mindistThr)]
 write.table(all_samples_tab[wh_outlier,], "fail-ancestry-qc.txt", qu=F,ro=F,co=F,sep=" ")
 
 if (!is.na(ethnicityFilename)) {
-        png("ancestry.png",1000,650)
+        png("ancestry.png",1250,800,res=120)
         par(mfrow=c(1,2))
         layout(matrix(c(1,1,2),nrow=1))
-        plot(f$vectors[,1], f$vectors[,2], col=NULL, main="PCA with HapMap", xlab="PC1", ylab="PC2")
+	par(mar=c(4,5,1,0))
+        plot(f$vectors[,1], f$vectors[,2], col=NULL, xlab="PC1", ylab="PC2", cex.lab=2, cex.axis=1.5)
         ethnicityTab = read.table(ethnicityFilename, header=T)
         ethnicityTab = merge(ethnicityTab, colMat, sort=F)
         cols = sapply(project_samples, function(i) as.character(ethnicityTab$col[ethnicityTab$iid==i][1]))
@@ -78,8 +79,9 @@ if (!is.na(ethnicityFilename)) {
         points(centroids, col="black", cex=2, pch=19)
         contourData = getContour(f$vectors[wh_select,1], f$vectors[wh_select,2])
         contour(contourData[[1]], levels=contourData[[2]], col="black", add=TRUE, lwd=2)
+	par(mar=c(0,0,0,0))
         plot(Inf, axes=F, xlim=c(0,1), ylim=c(0,1), xlab="", ylab="")
-        legend("left", legend=colMat[,1], col=colMat[,2], lwd=2, cex=1.2, bty="n")
+        legend("left", legend=colMat[,1], fill=colMat[,2], cex=1.8, bty="n")
         ethnicity = sapply(project_samples, function(i) as.character(ethnicityTab$self_ethnic[ethnicityTab$iid==i][1]))
         ethnicityTT = table(ethnicity, mindist>mindistThr)
         colnames(ethnicityTT) = c("Kept", "Filtered")
@@ -93,9 +95,9 @@ if (!is.na(ethnicityFilename)) {
 }
 dev.off()
 
-f10 = flashpca("all.shared_hapmap_pruned", ndim=10)
-f10Mat = f10$vectors[wh_project,]
-rownames(f10Mat) = project_samples
-colnames(f10Mat) = paste0("PC",1:10)
-write.csv(f10Mat, "ancestry_pcs.csv")
+#f10 = flashpca("all.shared_hapmap_pruned", ndim=10)
+#f10Mat = f10$vectors[wh_project,]
+#rownames(f10Mat) = project_samples
+#colnames(f10Mat) = paste0("PC",1:10)
+#write.csv(f10Mat, "ancestry_pcs.csv")
 

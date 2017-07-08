@@ -53,8 +53,8 @@ plink --bfile n${i} --missing --out n${i}
 plink --bfile n${i} --het --out n${i}
 Rscript ${PBS_O_WORKDIR}/aw_imiss-vs-het.R n${i} ${HET} ${IMISS}
 mv fail-imisshet-qc.txt n${i}.fail-imisshet-qc.txt
-mv imiss-vs-het.pdf n${i}.imiss-vs-het.pdf
+mv imiss-vs-het.png n${i}.imiss-vs-het.png
 plink --bfile n${i} --remove n${i}.fail-imisshet-qc.txt --make-bed --out n${i}
 
 cp n${i}.{bed,bim,fam} ${OUTPATH}/batch_data/
-cp n${i}.{fail-imisshet-qc.txt,imiss-vs-het.pdf} ${OUTPATH}/report/data/
+cp n${i}.{fail-imisshet-qc.txt,imiss-vs-het.png} ${OUTPATH}/report/data/

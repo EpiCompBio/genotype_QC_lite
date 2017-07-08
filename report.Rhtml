@@ -20,6 +20,8 @@
     
     <!-- Theme CSS -->
     <link id="theme-style" rel="stylesheet" href="assets/css/styles.css">
+    <!-- Slideshow CSS -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -133,22 +135,69 @@ end.rcode-->
                                 <div id="sampleqc2"  class="section-block">
                                     <h3 class="block-title">Samples with outlying missing genotype or heterozygosity rates</h3>
 
-<p>Large variations exist in DNA sample quality and these can have substantial effects on genotype call rate and genotype accuracy. Samples of low DNA quality or concentration often have below-average call rates and genotype accuracy. The genotype failure rate and heterozygosity rate per individual are both measures of DNA sample quality. Therefore, individuals with more than <!--rinline I(as.numeric(getParam("IMISS"))*100) -->% missing genotypes were removed. Those with an excessive or reduced proportion of heterozygote genotypes (<!--rinline I(getParam("HET")) --> SDs from the batch mean), which may be indicative of DNA sample contamination, inbreeding or differing population, were equally removed.</p>
+<p>Large variations exist in DNA sample quality and these can have substantial effects on genotype call rate and genotype accuracy. Samples of low DNA quality or concentration often have below-average call rates and genotype accuracy. The genotype failure rate and heterozygosity rate per individual are both measures of DNA sample quality. Therefore, individuals with more than <!--rinline I(as.numeric(getParam("IMISS"))*100) -->% missing genotypes were removed. Those with an excessive or reduced proportion of heterozygote genotypes (<!--rinline I(getParam("HET")) --> standard deviations from the batch mean), which may be indicative of DNA sample contamination, inbreeding or differing population, were equally removed.</p>
 
 <!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
 
-kable(rbind(t(c(BATCH="ALL",apply(samplesTab[,-1],2,sum))), samplesTab)) %>%
+if (nrow(samplesTab)==1) {
+    samplesTab$BATCH[1] = "ALL"
+} else {
+    samplesTab = rbind(t(c(BATCH="ALL",apply(samplesTab[,-1],2,sum))), samplesTab)
+}
+kable(samplesTab) %>%
   kable_styling(bootstrap_options=c("striped","hover","condensed","responsive"), full_width=F) %>%
   row_spec(1, bold = T) %>%
   add_header_above(c(" " = 1, " " = 1, " " = 1, " " = 1, "Filters" = 3))
 
 end.rcode-->
 
+<script>
+var slideIndex = 1; showDivs(slideIndex); function plusDivs(n) { showDivs(slideIndex += n); }
+function showDivs(n) {
+  var i; var x = document.getElementsByClassName("mySlides");
+  if (n > x.length) {slideIndex = 1}    
+  if (n < 1) {slideIndex = x.length}
+  for (i = 0; i < x.length; i++) { x[i].style.display = "none"; }
+  x[slideIndex-1].style.display = "block";  
+}
+</script>
+<div class='w3-content w3-display-container' style='width:50%;margin:auto'>
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+filenames = list.files(file.path(getParam("OUTPATH"),"report/data"), pattern="n*.imiss-vs-het.png", full=F)
+for (f in filenames) {
+    cat("<div class='w3-display-container mySlides'>")
+    cat(paste0("<img src='data/",f,"' style='width:100%'>"))
+    cat("<div class='w3-display-topmiddle w3-large w3-container w3-padding-16 w3-black'>")
+    cat(paste0("Batch ",gsub("[.].*","",f)))
+    cat("</div>")
+    cat("</div>")
+}
+end.rcode-->
+  <button class='w3-button w3-black w3-display-topleft' onclick='plusDivs(-1)'>&#10094;</button>
+  <button class='w3-button w3-black w3-display-topright' onclick='plusDivs(1)'>&#10095;</button>
+</div>
+
                                 </div><!--//section-block-->
                                 <div id="sampleqc3"  class="section-block">
                                     <h3 class="block-title">Duplicated or related individuals</h3>
 
-<p>If duplicates, high-degree relatives are present, a bias may be introduced in the study because the genotypes within families will be overrepresented, and thus the sample may no longer be a fair reflection of the allele frequencies in the entire population. To identify duplicate and related individuals, identity by state (IBS) was calculated for each pair of individuals based on the average proportion of alleles shared in common at genotyped SNPs. Because the method works best when only independent SNPs are included in the analysis, regions of extended linkage disequilibrium (LD) were removed remaining regions were pruned so that no pair of SNPs within a 50 kb window wre correlated at r2 > 0.2. The degree of recent shared ancestry for a pair of individuals (identity by descent, IBD) was then estimated with genome-wide IBS data. XX TODO XX threshold and what it filters</p>
+
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+
+rel = getParam("REL")
+if (rel>0.5) {
+    whRel = "duplicates and first-degree"
+} else if (rel>0.25) {
+    whRel = "second-degree"
+} else if (rel>0.125) {
+    whRel = "third-degree"
+} else {
+    whRel = "low and high-degree"
+}
+
+end.rcode-->
+
+<p>If duplicates or high-degree relatives are present, a bias may be introduced in the study because the genotypes within families will be overrepresented, and thus the sample may no longer be a fair reflection of the allele frequencies in the entire population. To identify duplicate and related individuals, identity by state (IBS) was calculated for each pair of individuals based on the average proportion of alleles shared in common at genotyped SNPs. Because the method works best when only independent SNPs are included in the analysis, regions of extended linkage disequilibrium (LD) were removed remaining regions were pruned so that no pair of SNPs within a 50 kb window wre correlated at r2 > 0.2. The degree of recent shared ancestry for a pair of individuals (identity by descent, IBD, from 0 to 1) was then estimated with genome-wide IBS data. A threshold of <!--rinline I(rel) --> was used to identify <!--rinline I(whRel) --> relatives, removing XX TODO XX samples.
 
                                 </div><!--//section-block-->
                                 <div id="sampleqc4"  class="section-block">
@@ -183,10 +232,10 @@ if (file.exists(ancestryTabFile)) {
 
 end.rcode-->
 
-                                    <div class="screenshot-holder">
-                                        <a href="data/ancestry.png" target="_new"><img class="img-responsive" src="data/ancestry.png" alt="Ancestry PCA" /></a>
-                                        <a class="mask" href="data/ancestry.png" target="_new"><i class="icon fa fa-link"></i></a>
-                                    </div> 
+<div class="screenshot-holder" style='width:80%;margin:auto'>
+    <a href="data/ancestry.png" target="_new"><img class="img-responsive" src="data/ancestry.png" alt="Ancestry PCA" /></a>
+    <a class="mask" href="data/ancestry.png" target="_new"><i class="icon fa fa-link"></i></a>
+</div> 
 
                                 </div><!--//section-block-->
                             </section><!--//doc-section-->
@@ -202,6 +251,11 @@ end.rcode-->
                                     <h3 class="block-title">Excessive genotyping missingness</h3>
 <p>Sub-optimal markers is key to the success of a GWA study, because they can present as false-positives and reduce the ability to identify true associations correlated with disease-risk. Therefore, markers with a call rate less than <!--rinline I(as.numeric(getParam("GENO"))*100) -->% were removed from further study.
 </p>
+
+<div class="screenshot-holder" style='width:80%;margin:auto'>
+    <a href="data/missingness.png" target="_new"><img class="img-responsive" src="data/missingness.png" alt="Missingness histogram" /></a>
+    <a class="mask" href="data/missingness.png" target="_new"><i class="icon fa fa-link"></i></a>
+</div> 
                                 </div><!--//section-block-->
                                 <div id="markerqc2"  class="section-block">
                                     <h3 class="block-title">Deviation from Hardy-Weinberg equilibrium (HWE)</h3>

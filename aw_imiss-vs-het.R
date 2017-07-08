@@ -17,14 +17,15 @@ IMISS_THR = as.numeric(as.character(args[3]))
 
 #Plot:
 colors = densCols(log10(imiss[,6]), het$meanHet)
-pdf(file.path(getwd(), 'imiss-vs-het.pdf'))
-plot(log10(imiss[,6]), het$meanHet, col=colors, xlim=c(-3,0),
-     ylim=c(0,0.5), pch=20, xlab="Proportion of missing genotypes",
-     ylab="Heterozygosity rate", axes=F)
-axis(2, at=seq(0,0.5,by=0.05), tick=T)
-axis(1, at=-3:0, labels=10**c(-3:0))
-abline(h=HET_SD_THRS, col="red", lty=2)
-abline(v=log10(IMISS_THR), col="RED", lty=2)
+png(file.path(getwd(), 'imiss-vs-het.png'), 1200, 1000, res=200)
+par(mar=c(4,4.5,0.5,0.5))
+plot(het$meanHet, log10(imiss[,6]), col=colors, ylim=c(-3,0),
+     xlim=c(0,0.5), pch=20, ylab="Proportion of missing genotypes",
+     xlab="Heterozygosity rate", axes=F)
+axis(1, at=seq(0,0.5,by=0.05), tick=T)
+axis(2, at=-3:0, labels=10**c(-3:0))
+abline(v=HET_SD_THRS, col="red", lty=2)
+abline(h=log10(IMISS_THR), col="RED", lty=2)
 dev.off()
 
 #Write failed samples:
