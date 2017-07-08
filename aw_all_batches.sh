@@ -16,7 +16,7 @@ module load plink R gcc
 
 ### create single dataset
 # only samples that pass missingness and heterogeneity filters
-cd ${OUTPATH}
+cd ${OUTPATH}/batch_data
 ls | egrep '^n[0-9]+.bed$' | sed 's/.bed//g' | sort -n -k1.2 > ${TMPDIR}/batches.list
 plink --merge-list ${TMPDIR}/batches.list --make-bed --out ${TMPDIR}/all --merge-mode 2
 cd ${TMPDIR}
@@ -54,15 +54,15 @@ comm -12 all.sort ${HAPMAPBFILENEW}.sort > hapmap_common.snps
 plink --bfile all --extract hapmap_common.snps --make-bed --out all.hapmap_snps
 plink --bfile all.hapmap_snps --bmerge ${HAPMAPBFILENEW} --out all.missnp
 plink --bfile ${HAPMAPBFILENEW} --flip all.missnp.missnp --make-bed --out ${HAPMAPBFILENEW}.flipped
-cat fail-ibd-qc.txt ${OUTPATH}/n*.fail-* | sort -k1 | uniq | cut -f1,2 > fail-qc-inds_preancestry.txt
+#cat fail-ibd-qc.txt ${OUTPATH}/n*.fail-* | sort -k1 | uniq | cut -f1,2 > fail-qc-inds_preancestry.txt
 plink --bfile all.hapmap_snps --bmerge ${HAPMAPBFILENEW}.flipped --extract all.prune.in \
       --make-bed --out all.shared_hapmap_pruned
 
 ### individuals with divergent ancestry
-Rscript ${PBS_O_WORKDIR}/aw_ancestry.r ${ETHNICFILE}
+Rscript ${PBS_O_WORKDIR}/aw_ancestry.r ${ANC} ${ETHNICFILE}
 
 ### remove individuals not passing dataset-wide QC
-cat fail-* ${OUTPATH}/n*.fail-* | sort -k1 | uniq | cut -f1,2 > fail-qc-inds.txt
+cat fail-* ${OUTPATH}/report/data/n*.fail-* | sort -k1 | uniq | cut -f1,2 > fail-qc-inds.txt
 plink --bfile all --remove fail-qc-inds.txt --make-bed --out all.clean-inds
 
 ######################
@@ -82,9 +82,10 @@ plink --bfile all.clean-inds --geno ${GENO} --maf ${MAF} --hwe ${HWE} --make-bed
 ######################
 
 ### copy output back to the out path
-cp all.clean-base.{bed,bim,fam} missingness.png ancestry.* fail-* ${OUTPATH}
-cp ${PBS_O_WORKDIR}/aw_params.sh ${OUTPATH}
+cp all.clean-base.{bed,bim,fam} ${OUTPATH}
+cp missingness.png ancestry.* fail-* ${OUTPATH}/report/data/
+cp ${PBS_O_WORKDIR}/aw_params.sh ${OUTPATH}/report/data/
 
 ### compute some filtering stats
-Rscript ${PBS_O_WORKDIR}/aw_stats.r ${PBS_O_WORKDIR}/aw_params.sh
+# Rscript ${PBS_O_WORKDIR}/aw_stats.r ${PBS_O_WORKDIR}/aw_params.sh
 

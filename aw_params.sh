@@ -1,13 +1,13 @@
+PROJECTNAME="Airwave (Affymetrix)"
+
 ### paths
 BASEPATH=/groupvol/med-bio/epiUKB/Airwave/
 
-ZCALLINPUT=true
-# same as ${BASEPATH}/coreExome_zcall/*.zcall but properly ordered
-INFILES=$(ls ${BASEPATH}/coreExome_zcall/ | egrep '^n[0-9]+.zcall$' | sort -n -k1.2 | \
-        sed "s@^@${BASEPATH}\/coreExome_zcall\/@" | sed ':a;N;$!ba;s/\n/ /g')
-OUTPATH=${BASEPATH}/gwas_results/illumina_b37_maf0.01/
-AFFYIDS=
-ETHNICFILE=
+ZCALLINPUT=false
+INFILES=${BASEPATH}/affymetrix_genotype/ICL_raw_1-9.bed
+OUTPATH=${BASEPATH}/QC/affy_b37_maf0.01/
+AFFYIDS=${BASEPATH}/affymetrix_genotype/standard/Axiom_UKB_VariantIDmapping.csv
+ETHNICFILE=${BASEPATH}/affymetrix_genotype/ethnicity.txt
 
 STRANDPATH=${BASEPATH}/strandFiles/humancoreexome-12v1-1_a
 HIGHLDFILE=${BASEPATH}/../resources/QCfiles/high-LD-regions.txt
@@ -23,3 +23,4 @@ HWE=0.00001
 HET=3
 IMISS=0.03
 REL=0.4
+ANC=0.005

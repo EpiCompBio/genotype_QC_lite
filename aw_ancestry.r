@@ -44,11 +44,8 @@ colMat = t(matrix(c(
 ),2))
 colnames(colMat) = c("self_ethnic", "col")
 
-mindistThr = 0.005
-
-#cmd_args = commandArgs(TRUE)
-#ethnicityFilename = ifelse(!is.na(cmd_args), cmd_args[1], NULL)
-ethnicityFilename = commandArgs(TRUE)[1]
+mindistThr = as.numeric(as.character(commandArgs(TRUE)[1]))
+ethnicityFilename = commandArgs(TRUE)[2]
 
 project_samples = read.table("all.fam",stringsAs=F)[,2]
 all_samples_tab = read.table("all.shared_hapmap_pruned.fam",stringsAs=F)[,1:2]

@@ -1,17 +1,34 @@
-<!–– Rscript -e "library(knitr); knit('report.Rhtml', output='report.html')" $PARAMS ––>
-
 <!DOCTYPE html>
-<html>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->  
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->  
+<!--[if !IE]><!--> <html lang="en"> <!--<![endif]-->  
 <head>
-  <title>Report of the quality control (QC) of the genotyping data</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-   <link href="bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
-   <link href="bootstrap-3.3.7-dist/css/bootstrap-theme.min.css" rel="stylesheet">
-</head>
-<body>
+    <title>Genotype QC report</title>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">    
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="assets/plugins/bootstrap/css/bootstrap.min.css">   
+    <!-- Plugins CSS -->    
+    <link rel="stylesheet" href="assets/plugins/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="assets/plugins/prism/prism.css">
+    <link rel="stylesheet" href="assets/plugins/elegant_font/css/style.css">
+    
+    <!-- Theme CSS -->
+    <link id="theme-style" rel="stylesheet" href="assets/css/styles.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+</head> 
 
-<h1> Report of the quality control (QC) of the genotyping data </h1>
+<body class="body-green">
 
 <!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
 
@@ -25,13 +42,42 @@ for (lib in c("knitr","kableExtra","data.table","gtools","dplyr"))
 params = commandArgs(trailingOnly=TRUE)[1]
 getParam = function(param) system(paste0("source ",params,"; echo $",param),intern=T)
 
-filenames = list.files(getParam("OUTPATH"), pattern="n*.fam", full=T)
+de = strsplit(date()," +")[[1]]
+reportDate = paste(de[3],de[2],de[5],"at",paste(strsplit(de[4],":")[[1]][1:2],collapse=":"))
+
+end.rcode-->
+
+    <div class="page-wrapper">
+        <!-- ******Header****** -->
+        <header id="header" class="header">
+            <div class="container">
+                <div class="branding">
+                    <h1 class="logo">
+                        <span aria-hidden="true" class="icon_documents_alt icon"></span>
+                        <span class="text-highlight">Genotype QC report: </span><span class="text-bold"><!--rinline I(getParam("PROJECTNAME")) --></span>
+                    </h1>
+                </div><!--//branding-->
+                <div class="meta"><i class="fa fa-clock-o"></i> Generated on <!--rinline I(reportDate) --></div>
+            </div><!--//container-->
+        </header><!--//header-->
+        <div class="doc-wrapper">
+            <div class="container">
+                <div class="doc-body">
+                    <div class="doc-content">
+                        <div class="content-inner">
+                            <section id="input-section" class="doc-section">
+                                <h2 class="section-title">Input data</h2>
+                                <div class="section-block">
+
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+
+filenames = list.files(file.path(getParam("OUTPATH"),"batch_data"), pattern="n*.fam", full=T)
 keptTab = t(sapply(filenames, function(x) c(system(paste0("wc -l <",x),intern=T),gsub("[.].*","",basename(x)))))
 keptTab = as.data.table(keptTab)
 colnames(keptTab) = c("kept", "BATCH")
 keptTab[,kept:=as.numeric(kept)]
 
-filenames = list.files(getParam("OUTPATH"), pattern="n*.fail-imisshet-qc.txt", full=T)
+filenames = list.files(file.path(getParam("OUTPATH"),"report/data"), pattern="n*.fail-imisshet-qc.txt", full=T)
 dt = rbindlist(lapply(filenames, function(x)cbind(fread(x),BATCH=gsub("[.].*","",basename(x)))))
 dt[,CID:=paste(FID,IID)]
 batchFiltTab = merge(dcast(dt[,.N,by=list(BATCH,FAILED)], BATCH~FAILED, value.var="N"), 
@@ -45,35 +91,47 @@ setcolorder(samplesTab, c("BATCH", "total", "kept", "excluded", "high_imiss", "h
 nSamplesExcl = sum(samplesTab$excluded)
 nSamplesTotal = sum(samplesTab$total)
 nBatches = nrow(samplesTab)
+infiles = strsplit(getParam("INFILES")," ")[[1]]
 
 if (nBatches==1) {
   cat('<p>QC was performed directly on the whole dataset, treated as a single batch, consisting of ',nSamplesTotal,' samples.</p>')
+  cat('<p>Input data was read from the following file: </p>')
+  cat(paste0("<p>",infiles,"</p>"))
 } else {
   cat(paste0('<p>QC was performed on ',nSamplesTotal,' samples distributed across ',nBatches,' batches.</p>'))
-  # XX table of batch names and their number of samples
+  if (length(unique(dirname(infiles)))==1) { # samples share base directory
+    cat(paste0("<p>",paste(basename(infiles), collapse=", "),"</p>"))
+    cat("<p>The files were in this folder:</p>")
+    cat(paste0("<p>",unique(dirname(infiles)),"</p>"))
+  } else {
+    cat(paste0("<p>",infiles,"</p>"))
+  }
 }
 
 end.rcode-->
 
-<p>Input data was read from the following files: </p>
+                                </div>
+                            </section><!--//doc-section-->
+
+                            <section id="sampleqc-section" class="doc-section">
+                                <h2 class="section-title">Sample QC</h2>
+
+<p/>
+<p>Per-sample QC consisted of four steps: 1) identification of biological sex for each sample, 2) identification of samples with outlying missing genotype or heterozygosity rates, 3) identification of duplicated or related individuals and 4) identification of individuals of divergent ancestry.
 <!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
-infiles = getParam("INFILES")
-infilesV = strsplit(infiles," ")[[1]]
-if (length(unique(dirname(infilesV)))==1) {
-  cat(paste0("<p>",paste(basename(infilesV), collapse=", "),"</p>"))
-  cat("<p>The files were in this folder:</p>")
-  cat(paste0("<p>",unique(dirname(infilesV)),"</p>"))
-} else {
-  cat(paste0("<p>",infilesV,"</p>"))
-}
+if (nBatches>1) 
+    cat(' Steps 2 and 3 were carried out per-batch individually, whereas steps 3 and 4 were applied on the whole sample set.')
 end.rcode-->
+</p>
 
-<h2> Sample QC </h2>
-<hr/>
+                                <div id="sampleqc1"  class="section-block">
+                                    <h3 class="block-title">Identification of biological sex for each sample</h3>
 
-<p>Per-sample QC of GWA data consisted of four steps: (1) identification of individuals with discordant sex information, (2) identification of samples with outlying missing genotype or heterozygosity rates, (3) identification of duplicated or related individuals and (4) identification of individuals of divergent ancestry. Steps 2 and 3 were carried out per-batch individually, whereas steps 3 and 4 were applied on the whole sample set.</p>
+<p>Biological sex for each sample was assigned to the one imputed based on chromosome X inbreeding coefficients. XX TODO XX break-down by sex</p>
 
-<h3> Samples with outlying missing genotype or heterozygosity rates </h3>
+                                </div><!--//section-block-->
+                                <div id="sampleqc2"  class="section-block">
+                                    <h3 class="block-title">Samples with outlying missing genotype or heterozygosity rates</h3>
 
 <p>Large variations exist in DNA sample quality and these can have substantial effects on genotype call rate and genotype accuracy. Samples of low DNA quality or concentration often have below-average call rates and genotype accuracy. The genotype failure rate and heterozygosity rate per individual are both measures of DNA sample quality. Therefore, individuals with more than <!--rinline I(as.numeric(getParam("IMISS"))*100) -->% missing genotypes were removed. Those with an excessive or reduced proportion of heterozygote genotypes (<!--rinline I(getParam("HET")) --> SDs from the batch mean), which may be indicative of DNA sample contamination, inbreeding or differing population, were equally removed.</p>
 
@@ -86,20 +144,100 @@ kable(rbind(t(c(BATCH="ALL",apply(samplesTab[,-1],2,sum))), samplesTab)) %>%
 
 end.rcode-->
 
-<h3> Duplicated or related individuals </h3>
+                                </div><!--//section-block-->
+                                <div id="sampleqc3"  class="section-block">
+                                    <h3 class="block-title">Duplicated or related individuals</h3>
 
-<p>If duplicates, high-degree relatives are present, a bias may be introduced in the study because the genotypes within families will be overrepresented, and thus the sample may no longer be a fair reflection of the allele frequencies in the entire population. To identify duplicate and related individuals, identity by state (IBS) was calculated for each pair of individuals based on the average proportion of alleles shared in common at genotyped SNPs. Because the method works best when only independent SNPs are included in the analysis, regions of extended linkage disequilibrium (LD) were removed remaining regions were pruned so that no pair of SNPs within a 50 kb window wre correlated at r2 > 0.2. The degree of recent shared ancestry for a pair of individuals (identity by descent, IBD) was then estimated with genome-wide IBS data.</p>
+<p>If duplicates, high-degree relatives are present, a bias may be introduced in the study because the genotypes within families will be overrepresented, and thus the sample may no longer be a fair reflection of the allele frequencies in the entire population. To identify duplicate and related individuals, identity by state (IBS) was calculated for each pair of individuals based on the average proportion of alleles shared in common at genotyped SNPs. Because the method works best when only independent SNPs are included in the analysis, regions of extended linkage disequilibrium (LD) were removed remaining regions were pruned so that no pair of SNPs within a 50 kb window wre correlated at r2 > 0.2. The degree of recent shared ancestry for a pair of individuals (identity by descent, IBD) was then estimated with genome-wide IBS data. XX TODO XX threshold and what it filters</p>
 
-<h3> Individuals of divergent ancestry</h3>
+                                </div><!--//section-block-->
+                                <div id="sampleqc4"  class="section-block">
+                                    <h3 class="block-title">Individuals of divergent ancestry</h3>
 
 <p>In genetic studies, a major source of confounding is population stratification, in which genotypic differences between cases and controls are generated because of different population origins rather than because of any effect on disease risk. Efforts were made to reduce the effect of population stratification through the removal of individuals of divergent ancestry. For this purpose, principal component analysis (PCA) was used, a multivariate statistical method used here to derive uncorrelated variables from the overall set of (correlated) markers. The principal component model was built using pruned genome-wide genotype data from populations of known ancestry, namely, the HapMap genotype data from Europe (CEU), Asia (CHB + JPT) and Africa (YRI). The PCA was then applied to predict principal component scores for the sample set, thus allowing them to be clustered in terms of ancestry alongside the HapMap samples. Regions of extended high LD (including the HLA region) were removed before the analysis because these can overly influence the principal component model.</p>
-<p>The CEU population was the closest to the majority of individuals in the sample set. A maximum Euclidean distance of 0.005 from the this population in the first to principal components was set as a threshold to remove individuals with divergent ancestry.</p>
+<p>The CEU population was the closest to the majority of individuals in the sample set. A maximum Euclidean distance of <!--rinline I(getParam("ANC")) --> from the this population in the first two principal components was set as a threshold to remove individuals with divergent ancestry.</p>
 
-<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+                                    <div class="screenshot-holder">
+                                        <a href="data/ancestry.png" target="_new"><img class="img-responsive" src="data/ancestry.png" alt="Ancestry PCA" /></a>
+                                        <a class="mask" href="data/ancestry.png" target="_new"><i class="icon fa fa-link"></i></a>
+                                    </div> 
 
-cat(paste0("<img src='",getParam("OUTPATH"),"ancestry.png'/>"))
+                                </div><!--//section-block-->
+                            </section><!--//doc-section-->
 
-end.rcode-->
+                            <section id="markerqc-section" class="doc-section">
+                                <h2 class="section-title">Marker QC</h2>
 
+<p/>
+<p>Per-marker QC of GWA data consisted of three steps: 1) identification of SNPs with an excessive missing genotype, 2) identification of SNPs demonstrating a significant deviation from Hardy-Weinberg equilibrium (HWE) and 3) the removal of all makers with a very low minor allele frequency.
+</p>
+
+                                <div id="markerqc1"  class="section-block">
+                                    <h3 class="block-title">Excessive genotyping missingness</h3>
+<p>Sub-optimal markers is key to the success of a GWA study, because they can present as false-positives and reduce the ability to identify true associations correlated with disease-risk. Therefore, markers with a call rate less than <!--rinline I(as.numeric(getParam("GENO"))*100) -->% were removed from further study.
+</p>
+                                </div><!--//section-block-->
+                                <div id="markerqc2"  class="section-block">
+                                    <h3 class="block-title">Deviation from Hardy-Weinberg equilibrium (HWE)</h3>
+<p>Extensive deviation from Hardy-Weinberg equilibrium (HWE) can be indicative of a genotyping or genotype calling error. SNPs with a HWE p-value less than <!--rinline I(getParam("HWE")) --> were be removed.
+</p>
+                                </div><!--//section-block-->
+                                <div id="markerqc3"  class="section-block">
+                                    <h3 class="block-title">Low minor allele frequency (MAF)</h3>
+                                    <p>The final step of the marker QC was to remove all SNPs with a very low minor allele frequency (MAF) of <!--rinline I(as.numeric(getParam("MAF"))*100) -->%. The small size of the heterozygote and rare homozygote clusters makes these variants difficult to call using current genotype calling algorithms and, even when well called, association signals seen at these rare SNPs are less robust because they are driven by the genotypes of only a few individuals. Given that power to detect association at rare variants is so low, their removal should have minimal impact.
+                                    </p>
+                                </div><!--//section-block-->
+                            </section><!--//doc-section-->
+                            
+                        </div><!--//content-inner-->
+                    </div><!--//doc-content-->
+                    <div class="doc-sidebar hidden-xs">
+                        <nav id="doc-nav">
+                            <ul id="doc-menu" class="nav doc-menu" data-spy="affix">
+                                <li><a class="scrollto" href="#input-section">Input data</a></li>
+                                <li>
+                                    <a class="scrollto" href="#sampleqc-section">Sample QC</a>
+                                    <ul class="nav doc-sub-menu">
+                                        <li><a class="scrollto" href="#sampleqc1">Sex</a></li>
+                                        <li><a class="scrollto" href="#sampleqc2">Miss. & het.</a></li>
+                                        <li><a class="scrollto" href="#sampleqc3">Dup. & relatedness</a></li>
+                                        <li><a class="scrollto" href="#sampleqc4">Ancestry</a></li>
+                                    </ul><!--//nav-->
+                                </li>
+                                <li>
+                                    <a class="scrollto" href="#markerqc-section">Marker QC</a>
+                                    <ul class="nav doc-sub-menu">
+                                        <li><a class="scrollto" href="#markerqc1">Missingness</a></li>
+                                        <li><a class="scrollto" href="#markerqc2">Hardy-Weinberg</a></li>
+                                        <li><a class="scrollto" href="#markerqc3">Minor allele freq.</a></li>
+                                    </ul><!--//nav-->
+                                </li>
+                            </ul><!--//doc-menu-->
+                        </nav>
+                    </div><!--//doc-sidebar-->
+                </div><!--//doc-body-->              
+            </div><!--//container-->
+        </div><!--//doc-wrapper-->
+        
+    </div><!--//page-wrapper-->
+    
+    <footer id="footer" class="footer text-center">
+        <div class="container">
+            <small class="copyright">Report generated by <a href="http://linkedin.com/in/davidmosen/" targe="_blank">David Mosen-Ansorena</a> based on a design by <a href="http://themes.3rdwavemedia.com/" targe="_blank">Xiaoying Riley</a>.
+            </small>
+        </div><!--//container-->
+    </footer><!--//footer-->
+    
+     
+    <!-- Main Javascript -->          
+    <script type="text/javascript" src="assets/plugins/jquery-1.12.3.min.js"></script>
+    <script type="text/javascript" src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="assets/plugins/prism/prism.js"></script>    
+    <script type="text/javascript" src="assets/plugins/jquery-scrollTo/jquery.scrollTo.min.js"></script>                                                                
+    <script type="text/javascript" src="assets/plugins/jquery-match-height/jquery.matchHeight-min.js"></script>
+    <script type="text/javascript" src="assets/js/main.js"></script>
+    
 </body>
-</html>
+</html> 
+
+

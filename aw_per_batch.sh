@@ -56,4 +56,5 @@ mv fail-imisshet-qc.txt n${i}.fail-imisshet-qc.txt
 mv imiss-vs-het.pdf n${i}.imiss-vs-het.pdf
 plink --bfile n${i} --remove n${i}.fail-imisshet-qc.txt --make-bed --out n${i}
 
-cp n${i}.{bed,bim,fam,fail-imisshet-qc.txt,imiss-vs-het.pdf} ${OUTPATH}
+cp n${i}.{bed,bim,fam} ${OUTPATH}/batch_data/
+cp n${i}.{fail-imisshet-qc.txt,imiss-vs-het.pdf} ${OUTPATH}/report/data/
