@@ -37,6 +37,7 @@
 opts_chunk$set(fig.width=5, fig.height=5)
 options(knitr.table.format = "html")
 options(warn=-1)
+options(scipen=999)
 
 for (lib in c("knitr","kableExtra","data.table","gtools","dplyr"))
   suppressMessages(library(lib,character.only=T))
@@ -59,7 +60,7 @@ end.rcode-->
                         <span class="text-highlight">Genotype QC report: </span><span class="text-bold"><!--rinline I(getParam("PROJECTNAME")) --></span>
                     </h1>
                 </div><!--//branding-->
-                <div class="meta"><i class="fa fa-clock-o"></i> Generated on <!--rinline I(reportDate) --></div>
+                <div class="meta"><i class="fa fa-clock-o"></i> Generated on <!--rinline I(reportDate) --> by user <!--rinline I(getParam("USER")) --></div>
             </div><!--//container-->
         </header><!--//header-->
         <div class="doc-wrapper">
@@ -100,7 +101,7 @@ if (nBatches==1) {
   cat('<p>Input data was read from the following file: </p>')
   cat(paste0("<p>",infiles,"</p>"))
 } else {
-  cat(paste0('<p>QC was performed on ',nSamplesTotal,' samples distributed across ',nBatches,' batches.</p>'))
+  cat(paste0('<p>QC was performed on ',nSamplesTotal,' samples distributed across ',nBatches,' batches in the following files:</p>'))
   if (length(unique(dirname(infiles)))==1) { # samples share base directory
     cat(paste0("<p>",paste(basename(infiles), collapse=", "),"</p>"))
     cat("<p>The files were in this folder:</p>")
@@ -110,9 +111,37 @@ if (nBatches==1) {
   }
 }
 
-end.rcode-->
+filenames = list.files(file.path(getParam("OUTPATH"),"report/data"), pattern="n*.raw.count", full=T)
+countsTab = sapply(filenames, function(x) read.table(x)[,1])
+# assert(sum(countsTab[1,])==nSamplesTotal)
+nMarkersTotal = sum(countsTab[2,])
 
+end.rcode-->
                                 </div>
+
+                                <div id="input1"  class="section-block">
+                                    <h3 class="block-title">Preprocessing</h3>
+
+<p>
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+
+zcallinput = as.logical(toupper(getParam("ZCALLINPUT")))
+affyids = getParam("AFFYIDS")
+genomebuild = getParam("GENOMEBUILD")
+
+if (zcallinput) {
+    s = ifelse(nBatches==1,"","s")
+    wasWere = ifelse(nBatches==1,"was","were")
+    cat(paste0("The input Illumina GenomeStudio report",s," ",wasWere,
+        " parsed into PLINK binary files for subsequent analysis."))
+} else {
+    cat("No preprocessing was necessary.")
+}
+
+end.rcode-->
+</p>
+
+                                </div><!--//section-block-->
                             </section><!--//doc-section-->
 
                             <section id="sampleqc-section" class="doc-section">
@@ -129,7 +158,16 @@ end.rcode-->
                                 <div id="sampleqc1"  class="section-block">
                                     <h3 class="block-title">Identification of biological sex for each sample</h3>
 
-<p>Biological sex for each sample was assigned to the one imputed based on chromosome X inbreeding coefficients. XX TODO XX break-down by sex</p>
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+
+filenames = list.files(file.path(getParam("OUTPATH"),"report/data"), pattern="n*.sexcheck", full=T)
+sexes = tolower(unlist(lapply(filenames, function(x) fread(x,header=T)$SNPSEX)))
+male = length(which(sexes%in%c("m",1)))
+female = length(which(sexes%in%c("f",2)))
+
+end.rcode-->
+
+<p>Biological sex for each sample was assigned to the one imputed based on chromosome X inbreeding coefficients. <!--rinline I(male) --> males and <!--rinline I(female) --> females were identified.</p>
 
                                 </div><!--//section-block-->
                                 <div id="sampleqc2"  class="section-block">
@@ -139,17 +177,35 @@ end.rcode-->
 
 <!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
 
-if (nrow(samplesTab)==1) {
-    samplesTab$BATCH[1] = "ALL"
+samplesTabDisplay = samplesTab
+if (nrow(samplesTabDisplay)==1) {
+    samplesTabDisplay$BATCH[1] = "ALL"
 } else {
-    samplesTab = rbind(t(c(BATCH="ALL",apply(samplesTab[,-1],2,sum))), samplesTab)
+    samplesTabDisplay = rbind(t(c(BATCH="ALL",apply(samplesTabDisplay[,-1],2,sum))), samplesTabDisplay)
 }
-kable(samplesTab) %>%
+kable(samplesTabDisplay) %>%
   kable_styling(bootstrap_options=c("striped","hover","condensed","responsive"), full_width=F) %>%
   row_spec(1, bold = T) %>%
   add_header_above(c(" " = 1, " " = 1, " " = 1, " " = 1, "Filters" = 3))
 
 end.rcode-->
+
+<div class='w3-content w3-display-container' style='width:70%;margin:auto'>
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+filenames = list.files(file.path(getParam("OUTPATH"),"report/data"), pattern="n*.imiss-vs-het.png", full=F)
+for (f in filenames) {
+    cat("<div class='w3-display-container mySlides screenshot-holder'>")
+    cat(paste0("<a href='data/",f,"' target='_new'><img src='data/",f,"' style='width:100%' /></a>"))
+    cat(paste0("<a class='mask' href='data/",f,"' target='_new'><i class='icon fa fa-link'></i></a>"))
+    cat("<div class='w3-display-topmiddle w3-large w3-container w3-padding-16 w3-black'>")
+    cat(paste0("Batch ",gsub("[.].*","",f)))
+    cat("</div>")
+    cat("</div>")
+}
+end.rcode-->
+  <button class='w3-button w3-black w3-display-topleft' onclick='plusDivs(-1)'>&#10094;</button>
+  <button class='w3-button w3-black w3-display-topright' onclick='plusDivs(1)'>&#10095;</button>
+</div>
 
 <script>
 var slideIndex = 1; showDivs(slideIndex); function plusDivs(n) { showDivs(slideIndex += n); }
@@ -161,26 +217,10 @@ function showDivs(n) {
   x[slideIndex-1].style.display = "block";  
 }
 </script>
-<div class='w3-content w3-display-container' style='width:50%;margin:auto'>
-<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
-filenames = list.files(file.path(getParam("OUTPATH"),"report/data"), pattern="n*.imiss-vs-het.png", full=F)
-for (f in filenames) {
-    cat("<div class='w3-display-container mySlides'>")
-    cat(paste0("<img src='data/",f,"' style='width:100%'>"))
-    cat("<div class='w3-display-topmiddle w3-large w3-container w3-padding-16 w3-black'>")
-    cat(paste0("Batch ",gsub("[.].*","",f)))
-    cat("</div>")
-    cat("</div>")
-}
-end.rcode-->
-  <button class='w3-button w3-black w3-display-topleft' onclick='plusDivs(-1)'>&#10094;</button>
-  <button class='w3-button w3-black w3-display-topright' onclick='plusDivs(1)'>&#10095;</button>
-</div>
 
                                 </div><!--//section-block-->
                                 <div id="sampleqc3"  class="section-block">
                                     <h3 class="block-title">Duplicated or related individuals</h3>
-
 
 <!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
 
@@ -195,9 +235,12 @@ if (rel>0.5) {
     whRel = "low and high-degree"
 }
 
+IBDFailFile = file.path(getParam("OUTPATH"),"report/data/fail-ibd-qc.txt")
+nIBDFail = as.numeric(system(paste0("wc -l <", IBDFailFile), intern=T))
+
 end.rcode-->
 
-<p>If duplicates or high-degree relatives are present, a bias may be introduced in the study because the genotypes within families will be overrepresented, and thus the sample may no longer be a fair reflection of the allele frequencies in the entire population. To identify duplicate and related individuals, identity by state (IBS) was calculated for each pair of individuals based on the average proportion of alleles shared in common at genotyped SNPs. Because the method works best when only independent SNPs are included in the analysis, regions of extended linkage disequilibrium (LD) were removed remaining regions were pruned so that no pair of SNPs within a 50 kb window wre correlated at r2 > 0.2. The degree of recent shared ancestry for a pair of individuals (identity by descent, IBD, from 0 to 1) was then estimated with genome-wide IBS data. A threshold of <!--rinline I(rel) --> was used to identify <!--rinline I(whRel) --> relatives, removing XX TODO XX samples.
+<p>If duplicates or high-degree relatives are present, a bias may be introduced in the study because the genotypes within families will be overrepresented, and thus the sample may no longer be a fair reflection of the allele frequencies in the entire population. To identify duplicate and related individuals, identity by state (IBS) was calculated for each pair of individuals based on the average proportion of alleles shared in common at genotyped SNPs. Because the method works best when only independent SNPs are included in the analysis, regions of extended linkage disequilibrium (LD) were removed remaining regions were pruned so that no pair of SNPs within a 50 kb window wre correlated at r2 > 0.2. The degree of recent shared ancestry for a pair of individuals (identity by descent, IBD, from 0 to 1) was then estimated with genome-wide IBS data. A threshold of <!--rinline I(rel) --> was used to identify <!--rinline I(whRel) --> relatives, removing <!--rinline I(nIBDFail) --> samples.
 
                                 </div><!--//section-block-->
                                 <div id="sampleqc4"  class="section-block">
@@ -208,7 +251,7 @@ end.rcode-->
 <!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
 
 ancestryFailFile = file.path(getParam("OUTPATH"),"report/data/fail-ancestry-qc.txt")
-nAncFail = system(paste0("wc -l <", ancestryFailFile), intern=T)
+nAncFail = as.numeric(system(paste0("wc -l <", ancestryFailFile), intern=T))
 
 end.rcode-->
 
@@ -247,25 +290,38 @@ end.rcode-->
 <p>Per-marker QC of GWA data consisted of three steps: 1) identification of SNPs with an excessive missing genotype, 2) identification of SNPs demonstrating a significant deviation from Hardy-Weinberg equilibrium (HWE) and 3) the removal of all makers with a very low minor allele frequency.
 </p>
 
+<!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
+
+fileName = "/groupvol/med-bio/epiUKB/Airwave/QC/affy_b37_maf0.01/report/data/all.clean-base.log"
+logStr = readChar(fileName, file.info(fileName)$size)
+genoRm = as.numeric(gsub(".*\n([0-9]+) variants removed due to missing genotype data.*","\\1",logStr))
+hweRm = as.numeric(gsub(".*\n--hwe: ([0-9]+) variants removed due to Hardy-Weinberg exact test.*","\\1",logStr))
+mafRm = as.numeric(gsub(".*\n([0-9]+) variants removed due to minor allele threshold.*","\\1",logStr))
+
+end.rcode-->
+
                                 <div id="markerqc1"  class="section-block">
                                     <h3 class="block-title">Excessive genotyping missingness</h3>
-<p>Sub-optimal markers is key to the success of a GWA study, because they can present as false-positives and reduce the ability to identify true associations correlated with disease-risk. Therefore, markers with a call rate less than <!--rinline I(as.numeric(getParam("GENO"))*100) -->% were removed from further study.
+<p>Sub-optimal markers is key to the success of a GWA study, because they can present as false-positives and reduce the ability to identify true associations correlated with disease-risk. Therefore, <!--rinline I(genoRm) --> markers with a call rate less than <!--rinline I(100-as.numeric(getParam("GENO"))*100) -->% were removed from further study.
 </p>
 
-<div class="screenshot-holder" style='width:80%;margin:auto'>
+<div class="screenshot-holder" style='width:60%;margin:auto'>
     <a href="data/missingness.png" target="_new"><img class="img-responsive" src="data/missingness.png" alt="Missingness histogram" /></a>
     <a class="mask" href="data/missingness.png" target="_new"><i class="icon fa fa-link"></i></a>
 </div> 
                                 </div><!--//section-block-->
                                 <div id="markerqc2"  class="section-block">
                                     <h3 class="block-title">Deviation from Hardy-Weinberg equilibrium (HWE)</h3>
-<p>Extensive deviation from Hardy-Weinberg equilibrium (HWE) can be indicative of a genotyping or genotype calling error. SNPs with a HWE p-value less than <!--rinline I(getParam("HWE")) --> were be removed.
+
+<p>Extensive deviation from Hardy-Weinberg equilibrium (HWE) can be indicative of a genotyping or genotype calling error. <!--rinline I(hweRm) --> SNPs with a HWE p-value less than <!--rinline I(getParam("HWE")) --> were removed.
 </p>
                                 </div><!--//section-block-->
                                 <div id="markerqc3"  class="section-block">
                                     <h3 class="block-title">Low minor allele frequency (MAF)</h3>
-                                    <p>The final step of the marker QC was to remove all SNPs with a very low minor allele frequency (MAF) of <!--rinline I(as.numeric(getParam("MAF"))*100) -->%. The small size of the heterozygote and rare homozygote clusters makes these variants difficult to call using current genotype calling algorithms and, even when well called, association signals seen at these rare SNPs are less robust because they are driven by the genotypes of only a few individuals. Given that power to detect association at rare variants is so low, their removal should have minimal impact.
-                                    </p>
+
+<p>The final step of the marker QC was to remove <!--rinline I(mafRm) --> SNPs with a minor allele frequency (MAF) lower than <!--rinline I(as.numeric(getParam("MAF"))*100) -->%. For these SNPs with such low MAF, The small size of the heterozygote and rare homozygote clusters makes these variants difficult to call using current genotype calling algorithms and, even when well called, association signals seen at these rare SNPs are less robust because they are driven by the genotypes of only a few individuals. Given that power to detect association at rare variants is so low, their removal should have minimal impact.
+</p>
+
                                 </div><!--//section-block-->
                             </section><!--//doc-section-->
 
@@ -273,8 +329,11 @@ end.rcode-->
                                 <h2 class="section-title">Summary</h2>
                                 <div class="section-block">
 
-                                   <p>XX TODO XX summary table with excluded samples and markers
-                                    </p>
+<p>A total of <!--rinline I(nSamplesExcl+nIBDFail+nAncFail) --> samples (<!--rinline I(round((nSamplesExcl+nIBDFail+nAncFail)/nSamplesTotal*100,2)) -->%) were removed during the QC process: <!--rinline I(round(nSamplesExcl/nSamplesTotal*100,2)) -->% for having high missingness or outlier heterozygosity rates, <!--rinline I(round(nIBDFail/nSamplesTotal*100,2)) -->% because of duplication or high degree of relatedness, and <!--rinline I(round(nAncFail/nSamplesTotal*100,2)) -->% due to divergent ancestry.
+</p>
+
+<p>A total of <!--rinline I(genoRm+hweRm+mafRm) --> markers (<!--rinline I(round((genoRm+hweRm+mafRm)/nMarkersTotal*100,2)) -->%) were in turn removed: <!--rinline I(round(genoRm/nMarkersTotal*100,2)) -->% due to high missingness, <!--rinline I(round(hweRm/nMarkersTotal*100,2)) -->% due to significantly deviated HWE, and <!--rinline I(round(mafRm/nMarkersTotal*100,2)) -->% for having too low MAF.
+</p>
 
                                 </div>
                             </section><!--//doc-section-->
@@ -284,7 +343,12 @@ end.rcode-->
                     <div class="doc-sidebar hidden-xs">
                         <nav id="doc-nav">
                             <ul id="doc-menu" class="nav doc-menu" data-spy="affix">
-                                <li><a class="scrollto" href="#input-section">Input data</a></li>
+                                <li>
+                                    <a class="scrollto" href="#input-section">Input data</a>
+                                    <ul class="nav doc-sub-menu">
+                                        <li><a class="scrollto" href="#input1">Preprocessing</a></li>
+                                    </ul><!--//nav-->
+                                </li>
                                 <li>
                                     <a class="scrollto" href="#sampleqc-section">Sample QC</a>
                                     <ul class="nav doc-sub-menu">

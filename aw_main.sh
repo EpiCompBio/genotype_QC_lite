@@ -18,6 +18,3 @@ if [ $NSAMPLES == "1" ]; then NSAMPLES=2:2; fi
 per_batch=$(qsub -J 1-${NSAMPLES} aw_per_batch.sh)
 all_batches=$(qsub -W depend=afterok:$per_batch aw_all_batches.sh)
 
-### generate report and housekeeping
-qsub -W depend=afterok:$all_batches aw_report.sh
-

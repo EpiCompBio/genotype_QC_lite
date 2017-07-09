@@ -71,7 +71,7 @@ if (!is.na(ethnicityFilename)) {
         par(mfrow=c(1,2))
         layout(matrix(c(1,1,2),nrow=1))
 	par(mar=c(4,5,1,0))
-        plot(f$vectors[,1], f$vectors[,2], col=NULL, xlab="PC1", ylab="PC2", cex.lab=2, cex.axis=1.5)
+        plot(f$vectors[,1], f$vectors[,2], col=NULL, xlab="PC1", ylab="PC2", cex.lab=2, cex.axis=1.5, lmain="")
         ethnicityTab = read.table(ethnicityFilename, header=T)
         ethnicityTab = merge(ethnicityTab, colMat, sort=F)
         cols = sapply(project_samples, function(i) as.character(ethnicityTab$col[ethnicityTab$iid==i][1]))
@@ -87,10 +87,11 @@ if (!is.na(ethnicityFilename)) {
         colnames(ethnicityTT) = c("Kept", "Filtered")
         write.csv(ethnicityTT, "ancestry.csv")
 } else {
-        png("ancestry.png")
-        plot(f$vectors[,1], f$vectors[,2], col=NULL, main="PCA with HapMap", xlab="PC1", ylab="PC2")
+        png("ancestry.png", 825,800,res=120)
+	par(mar=c(4,5,1,0))
+        plot(f$vectors[,1], f$vectors[,2], col=NULL, main="", xlab="PC1", ylab="PC2", cex.lab=1.5, cex.axis=1.2)
         points(f$vectors[wh_outlier,1], f$vectors[wh_outlier,2], col="#ff0000ff", pch=19)
-        points(f$vectors[wh_select,1], f$vectors[wh_select,2], col="#00ff0088", pch=19)
+        points(f$vectors[wh_select,1], f$vectors[wh_select,2], col="#75c18188", pch=19)
         points(centroids, col="black", pch=19, cex=2)
 }
 dev.off()
