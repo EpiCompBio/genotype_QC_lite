@@ -1,4 +1,4 @@
-CTYPE html>
+<!DOCTYPE html>
 <!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->  
 <!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->  
 <!--[if !IE]><!--> <html lang="en"> <!--<![endif]-->  
@@ -114,7 +114,7 @@ if (nBatches==1) {
 filenames = list.files(file.path(getParam("OUTPATH"),"report/data"), pattern="n*.raw.count", full=T)
 countsTab = sapply(filenames, function(x) read.table(x)[,1])
 # assert(sum(countsTab[1,])==nSamplesTotal)
-nMarkersTotal = sum(countsTab[2,])
+nMarkersTotal = min(countsTab[2,]) # assuming markers in batches overlap but some batches may have extra markers
 
 end.rcode-->
                                 </div>
@@ -454,6 +454,5 @@ end.rcode-->
     
 </body>
 </html> 
-
 
 
