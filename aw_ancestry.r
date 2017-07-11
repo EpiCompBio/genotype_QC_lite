@@ -58,6 +58,7 @@ clusters = cutree(hclust(dist(f$vectors[wh_hapmap,])), k=3)
 centroids = t(sapply(unique(clusters), function(i) colMeans(f$vectors[wh_hapmap,][clusters==i,])))
 x = f$vectors[wh_project,]
 distances = t(apply(x, 1, function(i) apply(centroids, 1, function(c) dist(rbind(i,c)))))
+# select the cluster number to which more project samples are closest (i.e. the most populous)
 wh_cluster = as.numeric(names(tail(sort(table(apply(distances, 1, which.min))),1)))
 mindist = distances[,wh_cluster]
 summary(mindist)
@@ -96,9 +97,9 @@ if (!is.na(ethnicityFilename)) {
 }
 dev.off()
 
-#f10 = flashpca("all.shared_hapmap_pruned", ndim=10)
-#f10Mat = f10$vectors[wh_project,]
-#rownames(f10Mat) = project_samples
-#colnames(f10Mat) = paste0("PC",1:10)
-#write.csv(f10Mat, "ancestry_pcs.csv")
+f10 = flashpca("all.shared_hapmap_pruned", ndim=10)
+f10Mat = f10$vectors[wh_project,]
+rownames(f10Mat) = project_samples
+colnames(f10Mat) = paste0("PC",1:10)
+write.csv(f10Mat, "ancestry_pcs.csv")
 

@@ -10,6 +10,7 @@ INFILES=$(ls ${BASEPATH}/coreExome_zcall/ | egrep '^n[0-9]+.zcall$' | sort -n -k
 OUTPATH=${BASEPATH}/QC/illumina_b37_maf0.01/
 AFFYIDS=
 ETHNICFILE=
+SEXFILE=
 
 STRANDPATH=${BASEPATH}/strandFiles/humancoreexome-12v1-1_a
 HIGHLDFILE=${BASEPATH}/../resources/QCfiles/high-LD-regions.txt

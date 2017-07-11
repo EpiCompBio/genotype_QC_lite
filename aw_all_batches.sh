@@ -84,7 +84,7 @@ $PLINK --bfile all.clean-inds --geno ${GENO} --maf ${MAF} --hwe ${HWE} --make-be
 
 ### copy output back to the out path
 cp all.clean-base.{bed,bim,fam} ${OUTPATH}
-cp missingness.png ancestry.* fail-* all.clean-base.log ${OUTPATH}/report/data/
+cp missingness.png ancestry* fail-* all.clean-base.log ${OUTPATH}/report/data/
 cp ${PBS_O_WORKDIR}/aw_params.sh ${OUTPATH}/report/data/
 
 ## generate report

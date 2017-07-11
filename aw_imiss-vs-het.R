@@ -16,7 +16,7 @@ HET_SD_THRS = mean(het$meanHet,na.rm=T) + c(-HET_SDS,HET_SDS) * sd(het$meanHet,n
 IMISS_THR = as.numeric(as.character(args[3]))
 
 #Plot:
-colors = densCols(log10(imiss[,6]), het$meanHet)
+colors = densCols(log10(imiss[,6]), het$meanHet, colramp=colorRampPalette(c("#75c181","#2B472F")))
 png(file.path(getwd(), 'imiss-vs-het.png'), 1400, 1000, res=200)
 par(mar=c(4,4.5,0.5,0.5))
 plot(het$meanHet, log10(imiss[,6]), col=colors, ylim=c(-3,0),

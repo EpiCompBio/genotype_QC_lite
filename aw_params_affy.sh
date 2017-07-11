@@ -8,6 +8,7 @@ INFILES=${BASEPATH}/affymetrix_genotype/ICL_raw_1-9.bed
 OUTPATH=${BASEPATH}/QC/affy_b37_maf0.01/
 AFFYIDS=${BASEPATH}/affymetrix_genotype/standard/Axiom_UKB_VariantIDmapping.csv
 ETHNICFILE=${BASEPATH}/affymetrix_genotype/ethnicity.txt
+SEXFILE=${BASEPATH}/affymetrix_genotype/sex.txt
 
 STRANDPATH=${BASEPATH}/strandFiles/humancoreexome-12v1-1_a
 HIGHLDFILE=${BASEPATH}/../resources/QCfiles/high-LD-regions.txt
