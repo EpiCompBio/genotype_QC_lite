@@ -9,8 +9,8 @@ INFILES=$(ls ${BASEPATH}/coreExome_zcall/ | egrep '^n[0-9]+.zcall$' | sort -n -k
         sed "s@^@${BASEPATH}\/coreExome_zcall\/@" | sed ':a;N;$!ba;s/\n/ /g')
 OUTPATH=${BASEPATH}/QC/illumina_b37_maf0.01/
 AFFYIDS=
-ETHNICFILE=
-SEXFILE=
+ETHNICFILE=${BASEPATH}/coreExome_genotype/ethnicity.txt
+SEXFILE=${BASEPATH}/coreExome_genotype/sex.txt
 
 STRANDPATH=${BASEPATH}/strandFiles/humancoreexome-12v1-1_a
 HIGHLDFILE=${BASEPATH}/../resources/QCfiles/high-LD-regions.txt

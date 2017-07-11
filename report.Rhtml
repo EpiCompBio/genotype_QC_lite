@@ -342,8 +342,8 @@ end.rcode-->
 
 <!--begin.rcode, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE
 
-fileName = "/groupvol/med-bio/epiUKB/Airwave/QC/affy_b37_maf0.01/report/data/all.clean-base.log"
-logStr = readChar(fileName, file.info(fileName)$size)
+filename = file.path(getParam("OUTPATH"),"report/data/all.clean-base.log")
+logStr = readChar(filename, file.info(fileName)$size)
 genoRm = as.numeric(gsub(".*\n([0-9]+) variants removed due to missing genotype data.*","\\1",logStr))
 hweRm = as.numeric(gsub(".*\n--hwe: ([0-9]+) variants removed due to Hardy-Weinberg exact test.*","\\1",logStr))
 mafRm = as.numeric(gsub(".*\n([0-9]+) variants removed due to minor allele threshold.*","\\1",logStr))
