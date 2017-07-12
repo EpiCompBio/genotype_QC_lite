@@ -262,13 +262,13 @@ function showDivs(n) {
 
 rel = getParam("REL")
 if (rel>0.5) {
-    whRel = "duplicates and first-degree"
+    whRel = "genetically identical"
 } else if (rel>0.25) {
-    whRel = "second-degree"
+    whRel = "first-degree"
 } else if (rel>0.125) {
-    whRel = "third-degree"
+    whRel = "second-degree"
 } else {
-    whRel = "low and high-degree"
+    whRel = "both low and high-degree (i.e. second-degree)"
 }
 
 IBDFailFile = file.path(getParam("OUTPATH"),"report/data/fail-ibd-qc.txt")
@@ -277,7 +277,7 @@ nIBDFail = as.numeric(system(paste0("wc -l <", IBDFailFile), intern=T))
 end.rcode-->
 
 <p>If duplicates or high-degree relatives are present, a bias may be introduced in the study because the genotypes within families will be overrepresented, and thus the sample may no longer be a fair reflection of the allele frequencies in the entire population. To identify duplicate and related individuals, identity by state (IBS) was calculated for each pair of individuals based on the average proportion of alleles shared in common at genotyped SNPs. Because the method works best when only independent SNPs are included in the analysis, regions of extended linkage disequilibrium (LD) were removed remaining regions were pruned so that no pair of SNPs within a 50 kb window were correlated at r2 > 0.2. SNPs with a call rate lower than <!--rinline I(100-as.numeric(getParam("GENO"))*100) -->% or with a HWE p-value less than <!--rinline I(getParam("HWE")) --> were not considered either. The degree of recent shared ancestry for a pair of individuals (identity by descent, IBD, from 0 to 1) was then estimated with genome-wide IBS data.</p>
-<p>A threshold of <!--rinline I(rel) --> was used to identify <b><!--rinline I(whRel) --> relatives</b>. One member of each pair of samples with observed genomic relatedness greater than this cutoff value was excluded, trying to maximize the final sample size. This resulted in <!--rinline I(rel) --> sample exclusions.</p>
+<p>A threshold of <!--rinline I(rel) --> was used to identify duplicates and <b><!--rinline I(whRel) --> relatives</b>. One member of each pair of samples with observed genomic relatedness greater than this cutoff value was excluded, trying to maximize the final sample size. This resulted in <!--rinline I(nIBDFail) --> sample exclusions.</p>
 
                                 </div><!--//section-block-->
                                 <div id="sampleqc4"  class="section-block">
